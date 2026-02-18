@@ -124,6 +124,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/stock-out', [StockOutController::class, 'index'])->name('stock-out.index');
     Route::post('/stock-out/scan', [StockOutController::class, 'scan'])->name('stock-out.scan');
     Route::get('/stock-out/history', [StockOutController::class, 'history'])->name('stock-out.history');
+    Route::delete('/stock-out/clear-history', [StockOutController::class, 'clearHistory'])->name('stock-out.clearHistory');
     Route::get('/stock-out/batch-info', [StockOutController::class, 'getBatchInfo'])->name('stock-out.batch-info');
 });
 

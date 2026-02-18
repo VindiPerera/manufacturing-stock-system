@@ -33,6 +33,12 @@ class ManufacturingOrder extends Model
         return $this->belongsTo(Product::class);
     }
 
+    // Relationship with Batch (one-to-one)
+    public function batch()
+    {
+        return $this->hasOne(Batch::class);
+    }
+
     // Generate unique batch number
     public static function generateBatchNumber()
     {

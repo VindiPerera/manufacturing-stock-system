@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ManufacturingOrderController;
+use App\Http\Controllers\BatchController;
+use App\Http\Controllers\StockOutController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -107,6 +109,22 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Manufacturing Management Routes
     Route::resource('manufacturing', ManufacturingOrderController::class);
+
+    // Batch & Labeling Routes
+    Route::resource('batches', BatchController::class)->except(['create', 'edit', 'update']);
+    Route::get('/batches/{batch}/print', [BatchController::class, 'printLabel'])->name('batches.print');
+    Route::post('/batches/{batch}/mark-printed', [BatchController::class, 'markPrinted'])->name('batches.markPrinted');
+    Route::post('/batches/print-multiple', [BatchController::class, 'printMultiple'])->name('batches.printMultiple');
+    Route::post('/batches/mark-multiple-printed', [BatchController::class, 'markMultiplePrinted'])->name('batches.markMultiplePrinted');
+    Route::post('/batches/preview', [BatchController::class, 'preview'])->name('batches.preview');
+    Route::get('/batches/search', [BatchController::class, 'search'])->name('batches.search');
+    Route::get('/products/{product}/batches', [BatchController::class, 'productHistory'])->name('batches.productHistory');
+
+    // Stock Out / Checkout Routes (Scan-to-Deduct)
+    Route::get('/stock-out', [StockOutController::class, 'index'])->name('stock-out.index');
+    Route::post('/stock-out/scan', [StockOutController::class, 'scan'])->name('stock-out.scan');
+    Route::get('/stock-out/history', [StockOutController::class, 'history'])->name('stock-out.history');
+    Route::get('/stock-out/batch-info', [StockOutController::class, 'getBatchInfo'])->name('stock-out.batch-info');
 });
 
 require __DIR__.'/auth.php';

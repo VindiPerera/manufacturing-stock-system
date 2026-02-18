@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ManufacturingOrder;
 use App\Models\Product;
+use App\Models\Batch;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -73,10 +74,17 @@ class ManufacturingOrderController extends Controller
         // Update product stock
         $product->increment('current_stock', $validated['production_quantity']);
 
+        // Automatically create a batch for labeling
+        $batch = Batch::createFromManufacturingOrder($manufacturingOrder);
+
         // Return manufacturing order data for dynamic addition
         $orderData = [
             'id' => $manufacturingOrder->id,
             'batch_number' => $manufacturingOrder->batch_number,
+            'batch' => [
+                'id' => $batch->id,
+                'batch_number' => $batch->batch_number,
+            ],
             'product' => [
                 'id' => $manufacturingOrder->product->id,
                 'name' => $manufacturingOrder->product->name,

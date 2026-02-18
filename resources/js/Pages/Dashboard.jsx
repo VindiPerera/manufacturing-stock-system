@@ -43,7 +43,7 @@ export default function Dashboard() {
             description: 'Scan product barcodes, reduce stock automatically, and record stock-out transactions with batch tracking.',
             color: 'bg-purple-900',
             image: '/images/product-png.png',
-            link: '/barcode-scan',
+            link: '/stock-out',
         },
         {
             id: 6,

@@ -76,6 +76,10 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
         setShowAddModal(false);
     };
 
+    const handleUpdateProduct = (updatedProduct) => {
+        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    };
+
     const handleDeleteProduct = (productId) => {
         if (confirm('Are you sure you want to delete this product?')) {
             router.delete(`/products/${productId}`, {
@@ -304,7 +308,8 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
                 <EditProductModal 
                     product={selectedProduct}
                     onClose={handleCloseEditModal}
-                    onSuccess={() => {
+                    onSuccess={(updatedProduct) => {
+                        handleUpdateProduct(updatedProduct);
                         setShowEditModal(false);
                         setSelectedProduct(null);
                     }}

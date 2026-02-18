@@ -115,6 +115,9 @@ class StockOutController extends Controller
                 // Decrement the batch quantity
                 $batch->decrement('quantity', $quantityToDeduct);
 
+                // Also decrement the product's total current stock
+                $batch->product->decrement('current_stock', $quantityToDeduct);
+
                 // Log the transaction
                 StockOutTransaction::create([
                     'batch_id' => $batch->id,
@@ -199,6 +202,23 @@ class StockOutController extends Controller
             'stats' => $stats,
             'filters' => $request->only(['date_from', 'date_to', 'batch_number']),
         ]);
+    }
+
+    /**
+     * Clear all stock out transaction history.
+     */
+    public function clearHistory(Request $request)
+    {
+        try {
+            $deletedCount = StockOutTransaction::count();
+            StockOutTransaction::truncate();
+
+            return redirect()->route('stock-out.history')
+                ->with('success', "Successfully cleared {$deletedCount} transaction(s) from history.");
+        } catch (\Exception $e) {
+            return redirect()->route('stock-out.history')
+                ->with('error', 'Failed to clear history. Please try again.');
+        }
     }
 
     /**

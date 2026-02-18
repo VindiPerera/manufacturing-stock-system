@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { FiSearch, FiCalendar, FiArrowLeft, FiPackage } from 'react-icons/fi';
+import { FiSearch, FiCalendar, FiArrowLeft, FiPackage, FiTrash2 } from 'react-icons/fi';
 
 export default function History({ transactions = {}, stats = {}, filters: initialFilters = {} }) {
     const [filters, setFilters] = useState({
@@ -31,6 +31,14 @@ export default function History({ transactions = {}, stats = {}, filters: initia
         }
     };
 
+    const handleClearHistory = () => {
+        if (confirm('Are you sure you want to clear all transaction history? This action cannot be undo.')) {
+            router.delete('/stock-out/clear-history', {
+                preserveScroll: true,
+            });
+        }
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Stock Out History" />
@@ -48,6 +56,12 @@ export default function History({ transactions = {}, stats = {}, filters: initia
                             </button>
                             <h1 className="text-3xl font-bold text-gray-900">STOCK OUT HISTORY</h1>
                         </div>
+                        <button
+                            onClick={handleClearHistory}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+                        >
+                            <FiTrash2 /> Clear History
+                        </button>
                     </div>
 
                     {/* Stats Cards */}
@@ -94,12 +108,6 @@ export default function History({ transactions = {}, stats = {}, filters: initia
                                 onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
                                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            <button
-                                onClick={handleSearch}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                            >
-                                <FiSearch /> Search
-                            </button>
                             <button
                                 onClick={handleReset}
                                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"

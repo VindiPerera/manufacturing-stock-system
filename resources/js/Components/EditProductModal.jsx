@@ -30,9 +30,9 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
                 unit: product.unit || '',
                 barcode: product.barcode || '',
                 description: product.description || '',
-                minimum_stock: product.minimum_stock || '',
-                current_stock: product.current_stock || product.stock || '',
-                price: product.price || '',
+                minimum_stock: product.minimum_stock || '0',
+                current_stock: product.current_stock || product.stock || '0',
+                price: product.price || '0',
             });
             setImagePreview(product.image || null);
         }
@@ -57,7 +57,7 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.name || !formData.sku || !formData.category || !formData.unit) {
@@ -74,9 +74,9 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
         form.append('unit', formData.unit);
         form.append('barcode', formData.barcode);
         form.append('description', formData.description);
-        form.append('minimum_stock', formData.minimum_stock);
-        form.append('current_stock', formData.current_stock);
-        form.append('price', formData.price);
+        form.append('minimum_stock', formData.minimum_stock || '0');
+        form.append('current_stock', formData.current_stock || '0');
+        form.append('price', formData.price || '0');
         form.append('_method', 'PUT');
 
         const imageInput = document.querySelector('#edit-image-input');
@@ -84,27 +84,40 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
             form.append('image', imageInput.files[0]);
         }
 
-        router.post(`/products/${product.id}`, form, {
-            onSuccess: (response) => {
+        try {
+            const response = await fetch(`/products/${product.id}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                body: form
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
                 setLoading(false);
+                // Call onSuccess with the updated product data
+                if (onSuccess && data.product) {
+                    onSuccess(data.product);
+                }
                 onClose();
-                console.log('Product updated successfully:', response);
-                // Don't reload - let the parent component handle the update dynamically
-                router.reload();
-            },
-            onError: (errors) => {
+            } else {
                 setLoading(false);
-                console.error('Error updating product:', errors);
-                
-                // Show specific error messages
-                if (errors && typeof errors === 'object') {
-                    const errorMessages = Object.values(errors).flat().join('\n');
+                // Handle validation errors
+                if (data.errors) {
+                    const errorMessages = Object.values(data.errors).flat().join('\n');
                     alert('Error updating product:\n' + errorMessages);
                 } else {
-                    alert('Error updating product. Please try again.');
+                    alert(data.message || 'Error updating product. Please try again.');
                 }
             }
-        });
+        } catch (error) {
+            setLoading(false);
+            console.error('Error updating product:', error);
+            alert('Error updating product. Please try again.');
+        }
     };
 
     if (!product) {
@@ -302,7 +315,7 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
                         </div>
 
                         {/* Current Stock */}
-                        <div>
+                        {/* <div>
                             <label htmlFor="current_stock" className="block text-sm font-medium text-gray-700 mb-2">
                                 Current Stock
                             </label>
@@ -315,7 +328,7 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                                 placeholder="0"
                             />
-                        </div>
+                        </div> */}
 
                         {/* Description */}
                         <div className="md:col-span-2">

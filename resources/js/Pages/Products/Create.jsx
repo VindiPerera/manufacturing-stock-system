@@ -56,9 +56,9 @@ export default function Create() {
         form.append('unit', formData.unit);
         form.append('barcode', formData.barcode);
         form.append('description', formData.description);
-        form.append('minimum_stock', formData.minimumStock);
-        form.append('current_stock', formData.stock);
-        form.append('price', formData.price);
+        form.append('minimum_stock', formData.minimumStock || '0');
+        form.append('current_stock', '0');
+        form.append('price', formData.price || '0');
         if (formData.image) {
             form.append('image', formData.image);
         }
@@ -75,7 +75,7 @@ export default function Create() {
             <div className="bg-gray-50 min-h-screen py-8">
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-lg shadow-md p-8">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Product</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Product1</h1>
                         <p className="text-gray-600 mb-8">Fill in the product details below</p>
 
                         <form onSubmit={handleSubmit}>
@@ -182,7 +182,7 @@ export default function Create() {
                                 </div>
 
                                 {/* Stock */}
-                                <div>
+                                {/* <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Current Stock
                                     </label>
@@ -194,7 +194,7 @@ export default function Create() {
                                         placeholder="Enter stock quantity"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
-                                </div>
+                                </div> */}
 
                                 {/* Minimum Stock Level */}
                                 <div>

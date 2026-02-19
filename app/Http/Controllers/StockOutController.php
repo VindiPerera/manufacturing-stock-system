@@ -118,11 +118,12 @@ class StockOutController extends Controller
                 // Also decrement the product's total current stock
                 $batch->product->decrement('current_stock', $quantityToDeduct);
 
-                // Log the transaction
+                // Log the transaction — $batch->quantity is already decremented in memory by decrement()
                 StockOutTransaction::create([
                     'batch_id' => $batch->id,
                     'user_id' => $request->user()?->id,
                     'quantity' => $quantityToDeduct,
+                    'remaining_quantity' => $batch->quantity,
                     'reason' => 'scan_checkout',
                 ]);
             });
@@ -184,6 +185,7 @@ class StockOutController extends Controller
                 'product_name' => $transaction->batch->product->name,
                 'product_sku' => $transaction->batch->product->sku,
                 'quantity' => $transaction->quantity,
+                'remaining_quantity' => $transaction->remaining_quantity,
                 'reason' => $transaction->reason,
                 'user_name' => $transaction->user ? $transaction->user->name : 'System',
                 'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),

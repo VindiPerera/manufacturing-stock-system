@@ -126,16 +126,6 @@ export default function Index({ auth, batches, stores }) {
                         </div>
                     </div>
 
-                    {/* Navigation Buttons */}
-                    <div className="mb-8 flex gap-3 justify-end">
-                        <Link
-                            href={route('stock-transfers.history')}
-                            className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition"
-                        >
-                            View Transfer History
-                        </Link>
-                    </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left Panel - Available Batches */}
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">

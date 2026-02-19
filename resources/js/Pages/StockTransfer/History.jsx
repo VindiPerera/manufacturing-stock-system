@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import React from 'react';
 
@@ -28,20 +28,17 @@ export default function History({ auth, transfers }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Navigation Buttons */}
-                    <div className="mb-6 flex gap-3 justify-end">
-                        <Link
-                            href={route('stock-transfers.index')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition"
-                        >
-                            New Transfer
-                        </Link>
-                        {/* <Link
-                            href={route('stock-transfers.stores')}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition"
-                        >
-                            Manage Stores
-                        </Link> */}
+                    {/* Header */}
+                    <div className="flex items-center mb-8">
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={() => router.visit('/dashboard')}
+                                className="text-3xl font-bold text-gray-700 hover:text-gray-900"
+                            >
+                                ‹
+                            </button>
+                            <h1 className="text-3xl font-bold text-gray-900">TRANSFER HISTORY</h1>
+                        </div>
                     </div>
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">

@@ -138,6 +138,9 @@ export default function History({ transactions = {}, stats = {}, filters: initia
                                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Qty Out
                                         </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Remaining Qty
+                                        </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             User
                                         </th>
@@ -164,6 +167,21 @@ export default function History({ transactions = {}, stats = {}, filters: initia
                                                         -{tx.quantity}
                                                     </span>
                                                 </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                    {tx.remaining_quantity !== null && tx.remaining_quantity !== undefined ? (
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                            tx.remaining_quantity === 0
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : tx.remaining_quantity <= 5
+                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                : 'bg-green-100 text-green-800'
+                                                        }`}>
+                                                            {tx.remaining_quantity}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 text-xs">—</span>
+                                                    )}
+                                                </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {tx.user_name}
                                                 </td>
@@ -171,7 +189,7 @@ export default function History({ transactions = {}, stats = {}, filters: initia
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="6" className="px-6 py-12 text-center">
+                                            <td colSpan="7" className="px-6 py-12 text-center">
                                                 <FiPackage className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                                                 <p className="text-gray-500">No transactions found</p>
                                             </td>

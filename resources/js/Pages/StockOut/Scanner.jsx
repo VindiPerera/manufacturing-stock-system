@@ -163,15 +163,7 @@ export default function Scanner({ recentTransactions = [], todayStats = {} }) {
                             <h1 className="text-3xl font-bold text-gray-900">BARCODE SCANNING</h1>
                         </div>
                         
-                        <div className="flex items-center space-x-4">
-                            <a 
-                                href="/stock-out/history" 
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
-                            >
-                                <FiClock />
-                                View History
-                            </a>
-                        </div>
+
                     </div>
 
                     {/* Stats Cards */}
@@ -386,16 +378,7 @@ export default function Scanner({ recentTransactions = [], todayStats = {} }) {
                                         </ul>
                                     )}
                                 </div>
-                                {transactions.length > 0 && (
-                                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                                        <a 
-                                            href="/stock-out/history" 
-                                            className="text-blue-600 text-sm hover:text-blue-700 transition-colors font-medium"
-                                        >
-                                            View Full History →
-                                        </a>
-                                    </div>
-                                )}
+
                             </div>
                         </div>
                     </div>

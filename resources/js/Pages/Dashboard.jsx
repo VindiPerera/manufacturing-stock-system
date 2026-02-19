@@ -46,12 +46,20 @@ export default function Dashboard() {
             link: '/stock-out',
         },
         {
+            id: 7,
+            name: 'TRANSFER HISTORY',
+            description: 'View all batch transfer records to stores. Track transfer numbers, quantities, destinations, status and detailed item breakdown.',
+            color: 'bg-teal-600',
+            image: '/images/Store.png',
+            link: '/stock-transfers/history',
+        },
+        {
             id: 6,
-            name: 'ANALYTICS DASHBOARD',
-            description: 'Real-time manufacturing analytics, expiry alerts, low stock warnings, and complete batch traceability for inventory management.',
+            name: 'STOCK OUT HISTORY',
+            description: 'View the complete history of stock-out transactions, filter by date or product, and track all barcode-scanned stock removals.',
             color: 'bg-orange-500',
             image: '/images/report.png',
-            link: '/analytics',
+            link: '/stock-out/history',
         },
         // {
         //     id: 7,

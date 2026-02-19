@@ -13,12 +13,14 @@ class StockOutTransaction extends Model
         'batch_id',
         'user_id',
         'quantity',
+        'remaining_quantity',
         'reason',
         'notes',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
+        'remaining_quantity' => 'integer',
     ];
 
     /**

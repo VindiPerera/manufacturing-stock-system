@@ -2,6 +2,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 
 export default function ManufacturingShow({ manufacturingOrder }) {
+    const handleDelete = () => {
+        if (!confirm('Are you sure you want to delete this manufacturing order?')) {
+            return;
+        }
+
+        router.delete(`/manufacturing/${manufacturingOrder.id}`);
+    };
     return (
         <AuthenticatedLayout
             header={
@@ -121,20 +128,19 @@ export default function ManufacturingShow({ manufacturingOrder }) {
                         <div className="bg-gray-50 px-6 py-4 border-t">
                             <div className="flex justify-end space-x-3">
                                 <button
-                                    onClick={() => window.print()}
-                                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition flex items-center"
+                                    onClick={() => router.visit(`/manufacturing/${manufacturingOrder.id}/edit`)}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition flex items-center"
                                 >
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
-                                    Print Label
+                                    Edit Order
                                 </button>
+
+                              
                                 
                                 <button
-                                    onClick={() => router.delete(`/manufacturing/${manufacturingOrder.id}`, {
-                                        onBefore: () => confirm('Are you sure you want to delete this manufacturing order?'),
-                                        onSuccess: () => router.visit('/manufacturing')
-                                    })}
+                                    onClick={handleDelete}
                                     className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition flex items-center"
                                 >
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

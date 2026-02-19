@@ -99,24 +99,37 @@ export default function Index({ auth, batches, stores }) {
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Stock Transfer</h2>}
         >
-            <Head title="Stock Transfer" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => window.history.back()}
+                                className="text-3xl font-bold text-gray-700 hover:text-gray-900"
+                            >
+                                ‹
+                            </button>
+                            <h1 className="text-3xl font-bold text-gray-900">STOCK TRANSFER</h1>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                            <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                                {batches.length}
+                            </div>
+                            <span className="text-gray-700 font-semibold">/ Available Batches</span>
+                        </div>
+                    </div>
+
                     {/* Navigation Buttons */}
-                    <div className="mb-6 flex gap-3 justify-end">
+                    <div className="mb-8 flex gap-3 justify-end">
                         <Link
                             href={route('stock-transfers.history')}
-                            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition"
+                            className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition"
                         >
                             View Transfer History
                         </Link>
-                        {/* <Link
-                            href={route('stock-transfers.stores')}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition"
-                        >
-                            Manage Stores
-                        </Link> */}
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

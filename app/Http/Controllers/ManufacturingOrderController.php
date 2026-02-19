@@ -115,9 +115,13 @@ class ManufacturingOrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ManufacturingOrder $manufacturingOrder)
+    public function show($id)
     {
-        $manufacturingOrder->load('product');
+        $manufacturingOrder = ManufacturingOrder::with('product')->findOrFail($id);
+        
+        if (!$manufacturingOrder->product) {
+            return redirect()->route('manufacturing.index')->with('error', 'Product not found for this order.');
+        }
         
         return Inertia::render('Manufacturing/Show', [
             'manufacturingOrder' => [
@@ -142,9 +146,49 @@ class ManufacturingOrderController extends Controller
      */
     public function update(Request $request, ManufacturingOrder $manufacturingOrder)
     {
-        // Manufacturing orders are immutable after creation
-        // If updates are needed in the future, add specific fields here
-        return redirect()->route('manufacturing.index')->with('error', 'Manufacturing orders cannot be modified.');
+        $manufacturingOrder->load('product');
+        
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'production_quantity' => 'required|integer|min:1',
+            'manufacturing_date' => 'required|date',
+            'expiry_date' => 'nullable|date',
+        ]);
+
+        try {
+            $oldQuantity = $manufacturingOrder->production_quantity;
+            $newQuantity = $validated['production_quantity'];
+            $quantityDifference = $newQuantity - $oldQuantity;
+
+            // Update the manufacturing order
+            $manufacturingOrder->update($validated);
+
+            // Update product stock based on quantity difference
+            if ($quantityDifference !== 0) {
+                $product = Product::find($manufacturingOrder->product_id);
+                if ($product) {
+                    if ($quantityDifference > 0) {
+                        $product->increment('current_stock', $quantityDifference);
+                    } else {
+                        $product->decrement('current_stock', abs($quantityDifference));
+                    }
+                }
+            }
+
+            // Update related batch
+            $batch = Batch::where('manufacturing_order_id', $manufacturingOrder->id)->first();
+            if ($batch) {
+                $batch->update([
+                    'quantity' => $newQuantity,
+                    'manufacturing_date' => $validated['manufacturing_date'],
+                    'expiry_date' => $validated['expiry_date'],
+                ]);
+            }
+
+            return redirect()->route('manufacturing.index')->with('success', 'Manufacturing order updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('manufacturing.index')->with('error', 'Error updating manufacturing order: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -152,12 +196,25 @@ class ManufacturingOrderController extends Controller
      */
     public function destroy(ManufacturingOrder $manufacturingOrder)
     {
-        // Revert stock changes when deleting
-        $product = $manufacturingOrder->product;
-        $product->decrement('current_stock', $manufacturingOrder->production_quantity);
+        try {
+            // Revert stock changes when deleting
+            $product = Product::find($manufacturingOrder->product_id);
+            if ($product) {
+                $product->decrement('current_stock', $manufacturingOrder->production_quantity);
+            }
 
-        $manufacturingOrder->delete();
+            // Delete related batch's stock transfer items first
+            $batches = Batch::where('manufacturing_order_id', $manufacturingOrder->id)->get();
+            foreach ($batches as $batch) {
+                $batch->stockTransferItems()->delete();
+                $batch->delete();
+            }
 
-        return redirect()->route('manufacturing.index')->with('success', 'Manufacturing order deleted successfully.');
+            $manufacturingOrder->delete();
+            
+            return redirect()->route('manufacturing.index')->with('success', 'Manufacturing order deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('manufacturing.index')->with('error', 'Error deleting manufacturing order: ' . $e->getMessage());
+        }
     }
 }

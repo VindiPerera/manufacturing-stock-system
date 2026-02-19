@@ -17,6 +17,7 @@ class Batch extends Model
         'product_code',
         'serial_number',
         'quantity',
+        'transferred_quantity',
         'manufacturing_date',
         'expiry_date',
         'label_printed',
@@ -30,6 +31,7 @@ class Batch extends Model
         'label_printed' => 'boolean',
         'serial_number' => 'integer',
         'quantity' => 'integer',
+        'transferred_quantity' => 'integer',
         'label_print_count' => 'integer',
     ];
 
@@ -47,6 +49,22 @@ class Batch extends Model
     public function manufacturingOrder()
     {
         return $this->belongsTo(ManufacturingOrder::class);
+    }
+
+    /**
+     * Relationship with StockTransferItems
+     */
+    public function stockTransferItems()
+    {
+        return $this->hasMany(StockTransferItem::class);
+    }
+
+    /**
+     * Get available quantity (not yet transferred)
+     */
+    public function getAvailableQuantityAttribute()
+    {
+        return $this->quantity - $this->transferred_quantity;
     }
 
     /**

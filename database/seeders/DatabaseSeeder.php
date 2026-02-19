@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
          $this->call(AdminUserSeeder::class);
+         $this->call(StoreSeeder::class);
 
         // Create test user if it doesn't exist
         User::firstOrCreate(

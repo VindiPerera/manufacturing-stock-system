@@ -6,6 +6,7 @@ use App\Http\Controllers\ManufacturingOrderController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\StockTransferController;
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;

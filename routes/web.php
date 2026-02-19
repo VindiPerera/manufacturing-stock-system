@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ManufacturingOrderController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\StockOutController;
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,84 +18,91 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    // Sample data - will be replaced with real data from database later
-    $stats = [
-        'totalManufacturedToday' => 1250,
-        'totalStockInStores' => 45680,
-        'lowStockAlerts' => 12,
-        'batchesExpiringSoon' => 8,
-        'recentManufacturing' => [
-            [
-                'product' => 'Premium Coffee Beans',
-                'batch' => 'PCB-20260217-001',
-                'quantity' => 500,
-                'date' => 'Today 09:30 AM'
-            ],
-            [
-                'product' => 'Organic Tea Leaves',
-                'batch' => 'OTL-20260217-002',
-                'quantity' => 300,
-                'date' => 'Today 11:15 AM'
-            ],
-            [
-                'product' => 'Chocolate Bars',
-                'batch' => 'CHB-20260217-003',
-                'quantity' => 450,
-                'date' => 'Today 02:45 PM'
-            ],
+    $features = [
+        [
+            'id' => 1,
+            'name' => 'PRODUCT MANAGEMENT',
+            'description' => 'Create, edit, and delete products. Set attributes like SKU, Category, Unit, Barcode, and Minimum stock level.',
+            'color' => 'bg-red-600',
+            'image' => '/images/product-png.png',
+            'link' => '/products',
         ],
-        'lowStockProducts' => [
-            [
-                'product' => 'Almond Cookies',
-                'sku' => 'AC-1001',
-                'currentStock' => 45,
-                'minStock' => 100
-            ],
-            [
-                'product' => 'Protein Powder',
-                'sku' => 'PP-2005',
-                'currentStock' => 78,
-                'minStock' => 150
-            ],
-            [
-                'product' => 'Energy Drinks',
-                'sku' => 'ED-3010',
-                'currentStock' => 125,
-                'minStock' => 200
-            ],
+        [
+            'id' => 2,
+            'name' => 'MANUFACTURING',
+            'description' => 'Create manufacturing orders, select products, enter quantities and dates. Auto-generate batch numbers and update stock.',
+            'color' => 'bg-blue-900',
+            'image' => '/images/Manufacturing.png',
+            'link' => '/manufacturing',
         ],
-        'expiringBatches' => [
-            [
-                'product' => 'Fresh Milk',
-                'batch' => 'FM-20260201-045',
-                'quantity' => 180,
-                'expiryDate' => '2026-02-25'
-            ],
-            [
-                'product' => 'Yogurt Cups',
-                'batch' => 'YC-20260205-078',
-                'quantity' => 240,
-                'expiryDate' => '2026-03-01'
-            ],
-            [
-                'product' => 'Cheese Slices',
-                'batch' => 'CS-20260208-112',
-                'quantity' => 95,
-                'expiryDate' => '2026-03-05'
-            ],
-            [
-                'product' => 'Bread Loaves',
-                'batch' => 'BL-20260210-156',
-                'quantity' => 320,
-                'expiryDate' => '2026-02-20'
-            ],
+        [
+            'id' => 3,
+            'name' => 'BATCH & LABELING',
+            'description' => 'Manage batch creation, print labels with product info and barcode. Reprint, search, and view batch history.',
+            'color' => 'bg-yellow-400',
+            'image' => '/images/product-png.png',
+            'link' => '/batches',
+        ],
+        [
+            'id' => 4,
+            'name' => 'STORE MANAGEMENT',
+            'description' => 'View store-wise stock, batch inventory levels, movement history, and receive low stock alerts.',
+            'color' => 'bg-green-600',
+            'image' => '/images/Store.png',
+            'link' => '/stores',
+        ],
+        [
+            'id' => 5,
+            'name' => 'BARCODE SCANNING',
+            'description' => 'Scan product barcodes, reduce stock automatically, and record stock-out transactions with batch tracking.',
+            'color' => 'bg-purple-900',
+            'image' => '/images/product-png.png',
+            'link' => '/stock-out',
+        ],
+        [
+            'id' => 6,
+            'name' => 'ANALYTICS DASHBOARD',
+            'description' => 'Real-time manufacturing analytics, expiry alerts, low stock warnings, and complete batch traceability for inventory management.',
+            'color' => 'bg-orange-500',
+            'image' => '/images/report.png',
+            'link' => '/analytics',
+        ],
+        [
+            'id' => 7,
+            'name' => 'CATEGORIES',
+            'description' => 'Organize products into categories for better structure and easy navigation throughout the system.',
+            'color' => 'bg-indigo-600',
+            'image' => '/images/product-png.png',
+            'link' => '/categories',
+        ],
+        [
+            'id' => 8,
+            'name' => 'USERS',
+            'description' => 'Manage user accounts, roles, and permissions. Control access to different modules and features.',
+            'color' => 'bg-pink-500',
+            'image' => '/images/users.png',
+            'link' => '/users',
         ],
     ];
 
     return Inertia::render('Dashboard', [
-        'stats' => $stats
+        'features' => $features
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Analytics & Dashboard Routes
+    Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+    Route::get('/analytics/batch/{batchIdentifier}', [AnalyticsController::class, 'batchTraceability'])->name('analytics.batch');
+    Route::get('/api/analytics/metrics', [AnalyticsController::class, 'apiMetrics'])->name('analytics.api.metrics');
+    Route::get('/api/analytics/expiring-batches', [AnalyticsController::class, 'apiExpiringBatches'])->name('analytics.api.expiring');
+    Route::get('/api/analytics/low-stock', [AnalyticsController::class, 'apiLowStockAlerts'])->name('analytics.api.lowStock');
+    Route::get('/api/analytics/batch/{batchIdentifier}', [AnalyticsController::class, 'searchBatch'])->name('analytics.api.batch');
+    Route::get('/api/analytics/report', [AnalyticsController::class, 'exportReport'])->name('analytics.api.report');
+    Route::get('/api/analytics/manufactured-details', [AnalyticsController::class, 'getManufacturedDetails'])->name('analytics.api.manufactured');
+    Route::get('/api/analytics/store-stock-details', [AnalyticsController::class, 'getStoreStockDetails'])->name('analytics.api.storeStock');
+    Route::get('/api/analytics/sales-details', [AnalyticsController::class, 'getSalesDetails'])->name('analytics.api.sales');
+});
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

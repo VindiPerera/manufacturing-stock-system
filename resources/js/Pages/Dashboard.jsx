@@ -47,11 +47,11 @@ export default function Dashboard() {
         },
         {
             id: 6,
-            name: 'REPORTS & ANALYTICS',
-            description: 'View manufacturing reports, batch reports, stock transfer reports, expiry reports, and daily stock-out summaries.',
+            name: 'ANALYTICS DASHBOARD',
+            description: 'Real-time manufacturing analytics, expiry alerts, low stock warnings, and complete batch traceability for inventory management.',
             color: 'bg-orange-500',
             image: '/images/report.png',
-            link: '/reports',
+            link: '/analytics',
         },
         {
             id: 7,

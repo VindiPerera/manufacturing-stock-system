@@ -86,7 +86,7 @@ export default function LowStockAlertsTable({ products }) {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                    <span className={`${stockLevel.textColor} ${stockLevel.color} bg-opacity-20 px-3 py-1 rounded-full text-xs font-bold`}>
+                                    <span className={`${stockLevel.textColor} bg-white px-3 py-1 rounded-full text-xs font-bold`}>
                                         {stockLevel.label}
                                     </span>
                                 </td>

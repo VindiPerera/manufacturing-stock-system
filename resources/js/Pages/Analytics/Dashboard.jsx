@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import MetricsCards from '@/Components/Analytics/MetricsCards';
@@ -12,6 +12,30 @@ import LowStockModal from '@/Components/Analytics/LowStockModal';
 
 export default function Dashboard({ metrics, expiringBatches, lowStockAlerts }) {
     const [activeModal, setActiveModal] = useState(null);
+    const [manufacturedBatches, setManufacturedBatches] = useState([]);
+    const [storeStockBatches, setStoreStockBatches] = useState([]);
+    const [salesTransactions, setSalesTransactions] = useState([]);
+
+    useEffect(() => {
+        // Fetch all detail data on component mount
+        fetchAllDetails();
+    }, []);
+
+    const fetchAllDetails = async () => {
+        try {
+            const [manufactured, storeStock, sales] = await Promise.all([
+                fetch('/api/analytics/manufactured-details').then(r => r.json()),
+                fetch('/api/analytics/store-stock-details').then(r => r.json()),
+                fetch('/api/analytics/sales-details').then(r => r.json()),
+            ]);
+
+            if (manufactured.success) setManufacturedBatches(manufactured.data);
+            if (storeStock.success) setStoreStockBatches(storeStock.data);
+            if (sales.success) setSalesTransactions(sales.data);
+        } catch (error) {
+            console.error('Error fetching analytics details:', error);
+        }
+    };
 
     const handleCardClick = (cardId) => {
         setActiveModal(cardId);
@@ -114,6 +138,7 @@ export default function Dashboard({ metrics, expiringBatches, lowStockAlerts }) 
                 onClose={closeModal}
                 quantity={metrics?.totalManufacturedToday?.quantity ?? 0}
                 batchCount={metrics?.totalManufacturedToday?.count ?? 0}
+                batches={manufacturedBatches}
             />
 
             <StoreStockModal
@@ -123,6 +148,7 @@ export default function Dashboard({ metrics, expiringBatches, lowStockAlerts }) 
                 totalBatches={metrics?.liveStoreStock?.total_batches ?? 0}
                 initialQuantity={metrics?.liveStoreStock?.initial_quantity ?? 0}
                 soldQuantity={metrics?.liveStoreStock?.sold_quantity ?? 0}
+                batches={storeStockBatches}
             />
 
             <SalesDetailsModal
@@ -130,6 +156,7 @@ export default function Dashboard({ metrics, expiringBatches, lowStockAlerts }) 
                 onClose={closeModal}
                 transactionCount={metrics?.salesToday?.count ?? 0}
                 quantitySold={metrics?.salesToday?.quantity ?? 0}
+                transactions={salesTransactions}
             />
 
             <LowStockModal

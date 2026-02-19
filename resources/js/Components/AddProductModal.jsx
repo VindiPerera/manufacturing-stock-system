@@ -1,16 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 
 export default function AddProductModal({ onClose, onSuccess }) {
+    // Function to generate a 12-digit barcode
+    const generateBarcode = () => {
+        const min = 100000000000; // 12 digits starting from 100000000000
+        const max = 999999999999; // 12 digits ending at 999999999999
+        return Math.floor(Math.random() * (max - min + 1) + min).toString();
+    };
+
     const [formData, setFormData] = useState({
         name: '',
         sku: '',
         category: '',
         unit: '',
-        barcode: '',
+        barcode: generateBarcode(), // Auto-generate on initialization
         description: '',
         minimum_stock: '0',
-        current_stock: '0',
         price: '0.00',
     });
 
@@ -20,6 +26,14 @@ export default function AddProductModal({ onClose, onSuccess }) {
 
     const units = ['pcs', 'box', 'kg', 'ltr', 'meter', 'dozen', 'set', 'piece'];
     const categories = ['Electronics', 'Clothing', 'Food', 'Beverages', 'Furniture', 'Other'];
+
+    // Handler to regenerate barcode
+    const handleRegenerateBarcode = () => {
+        setFormData(prev => ({
+            ...prev,
+            barcode: generateBarcode()
+        }));
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -40,7 +54,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setValidationErrors({});
 
@@ -66,7 +80,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
         form.append('barcode', formData.barcode.trim());
         form.append('description', formData.description.trim());
         form.append('minimum_stock', formData.minimum_stock || '0');
-        form.append('current_stock', formData.current_stock || '0');
+        form.append('current_stock', '0');
         form.append('price', formData.price || '0.00');
 
         const imageInput = document.querySelector('#image-input');
@@ -74,25 +88,39 @@ export default function AddProductModal({ onClose, onSuccess }) {
             form.append('image', imageInput.files[0]);
         }
 
-        router.post('/products', form, {
-            onSuccess: (response) => {
+        try {
+            const response = await fetch('/products', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                body: form
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
                 setLoading(false);
+                // Call onSuccess with the new product data
+                if (onSuccess && data.product) {
+                    onSuccess(data.product);
+                }
                 onClose();
-                console.log('Product added successfully:', response);
-                // Don't reload - let the parent component handle the update dynamically
-            },
-            onError: (errors) => {
+            } else {
                 setLoading(false);
-                console.error('Error adding product:', errors);
-                
-                // Handle Laravel validation errors
-                if (errors && typeof errors === 'object') {
-                    setValidationErrors(errors);
+                // Handle validation errors
+                if (data.errors) {
+                    setValidationErrors(data.errors);
                 } else {
-                    alert('Error adding product. Please try again.');
+                    alert(data.message || 'Error adding product. Please try again.');
                 }
             }
-        });
+        } catch (error) {
+            setLoading(false);
+            console.error('Error adding product:', error);
+            alert('Error adding product. Please try again.');
+        }
     };
 
     return (
@@ -100,7 +128,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-900">Add New Product</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Add New Product1</h2>
                     <button
                         onClick={onClose}
                         className="text-gray-500 hover:text-gray-700 transition"
@@ -224,16 +252,27 @@ export default function AddProductModal({ onClose, onSuccess }) {
                         {/* Barcode */}
                         <div className="col-span-2 md:col-span-1">
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Barcode
+                                Barcode (Auto-generated)
                             </label>
-                            <input
-                                type="text"
-                                name="barcode"
-                                value={formData.barcode}
-                                onChange={handleChange}
-                                placeholder="Enter barcode"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    name="barcode"
+                                    value={formData.barcode}
+                                    readOnly
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleRegenerateBarcode}
+                                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition"
+                                    title="Generate New Barcode"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         {/* Price */}
@@ -253,7 +292,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
                         </div>
 
                         {/* Current Stock */}
-                        <div className="col-span-2 md:col-span-1">
+                        {/* <div className="col-span-2 md:col-span-1">
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Current Stock
                             </label>
@@ -265,7 +304,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
                                 placeholder="Enter stock quantity"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                        </div>
+                        </div> */}
 
                         {/* Minimum Stock Level */}
                         <div className="col-span-2 md:col-span-1">

@@ -5,7 +5,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ManufacturingOrderController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\StockOutController;
-use App\Http\Controllers\AnalyticsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -116,6 +115,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulkDelete');
 
     // Manufacturing Management Routes
+    Route::get('/manufacturing/next-batch-number', [ManufacturingOrderController::class, 'getNextBatchNumber'])->name('manufacturing.nextBatchNumber');
     Route::resource('manufacturing', ManufacturingOrderController::class);
 
     // Batch & Labeling Routes
@@ -134,6 +134,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/stock-out/history', [StockOutController::class, 'history'])->name('stock-out.history');
     Route::delete('/stock-out/clear-history', [StockOutController::class, 'clearHistory'])->name('stock-out.clearHistory');
     Route::get('/stock-out/batch-info', [StockOutController::class, 'getBatchInfo'])->name('stock-out.batch-info');
+
+    // Stock Transfer Routes (Store Management)
+    Route::get('/stock-transfers', [StockTransferController::class, 'index'])->name('stock-transfers.index');
+    Route::post('/stock-transfers', [StockTransferController::class, 'store'])->name('stock-transfers.store');
+    Route::get('/stock-transfers/history', [StockTransferController::class, 'history'])->name('stock-transfers.history');
+    Route::get('/stock-transfers/stores', [StockTransferController::class, 'stores'])->name('stock-transfers.stores');
+    Route::post('/stock-transfers/stores', [StockTransferController::class, 'storeStore'])->name('stock-transfers.stores.store');
 });
 
 require __DIR__.'/auth.php';

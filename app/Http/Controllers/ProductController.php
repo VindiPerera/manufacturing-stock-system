@@ -105,6 +105,15 @@ class ProductController extends Controller
             'updated_at' => $product->updated_at,
         ];
 
+        // Check if it's an AJAX request and return JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Product created successfully',
+                'product' => $productData
+            ], 201);
+        }
+
         return redirect()->route('products.index')->with('newProduct', $productData);
     }
 
@@ -205,6 +214,41 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
+
+        // Return product data for dynamic update
+        $imageUrl = null;
+        if ($product->image) {
+            if (str_starts_with($product->image, '/storage/')) {
+                $imageUrl = $product->image;
+            } else {
+                $imageUrl = Storage::url($product->image);
+            }
+        }
+
+        $productData = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'sku' => $product->sku,
+            'category' => $product->category,
+            'unit' => $product->unit,
+            'barcode' => $product->barcode,
+            'description' => $product->description,
+            'minimum_stock' => $product->minimum_stock,
+            'stock' => $product->current_stock,
+            'price' => $product->price,
+            'image' => $imageUrl,
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
+        ];
+
+        // Check if it's an AJAX request and return JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Product updated successfully',
+                'product' => $productData
+            ], 200);
+        }
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }

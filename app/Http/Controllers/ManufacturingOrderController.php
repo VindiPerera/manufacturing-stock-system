@@ -11,6 +11,16 @@ use Inertia\Inertia;
 class ManufacturingOrderController extends Controller
 {
     /**
+     * Get next batch number
+     */
+    public function getNextBatchNumber()
+    {
+        return response()->json([
+            'batch_number' => ManufacturingOrder::generateBatchNumber()
+        ]);
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()
@@ -28,12 +38,8 @@ class ManufacturingOrderController extends Controller
                         'sku' => $order->product->sku,
                     ],
                     'production_quantity' => $order->production_quantity,
-                    'stock_before' => $order->stock_before,
-                    'stock_after' => $order->stock_after,
                     'manufacturing_date' => $order->manufacturing_date->format('Y-m-d'),
                     'expiry_date' => $order->expiry_date ? $order->expiry_date->format('Y-m-d') : null,
-                    'status' => $order->status,
-                    'notes' => $order->notes,
                     'created_at' => $order->created_at,
                     'updated_at' => $order->updated_at,
                 ];
@@ -53,55 +59,57 @@ class ManufacturingOrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'production_quantity' => 'required|integer|min:1',
-            'manufacturing_date' => 'required|date',
-            'expiry_date' => 'nullable|date|after:manufacturing_date',
-            'notes' => 'nullable|string|max:1000',
+            'batch_number' => 'required|string',
+            'products' => 'required|array|min:1',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.production_quantity' => 'required|integer|min:1',
+            'products.*.manufacturing_date' => 'required|date',
+            'products.*.expiry_date' => 'nullable|date',
         ]);
 
-        // Get the product and calculate stock values
-        $product = Product::findOrFail($validated['product_id']);
-        $stockBefore = $product->current_stock;
+        $createdOrders = [];
 
-        // Add stock values to validated data
-        $validated['stock_before'] = $stockBefore;
-        $validated['stock_after'] = $stockBefore + $validated['production_quantity'];
+        // Loop through each product and create manufacturing orders
+        foreach ($validated['products'] as $productData) {
+            // Get the product
+            $product = Product::findOrFail($productData['product_id']);
 
-        // Create the manufacturing order
-        $manufacturingOrder = ManufacturingOrder::create($validated);
+            // Create the manufacturing order
+            $manufacturingOrder = ManufacturingOrder::create([
+                'batch_number' => $validated['batch_number'],
+                'product_id' => $productData['product_id'],
+                'production_quantity' => $productData['production_quantity'],
+                'manufacturing_date' => $productData['manufacturing_date'],
+                'expiry_date' => $productData['expiry_date'] ?? null,
+            ]);
 
-        // Update product stock
-        $product->increment('current_stock', $validated['production_quantity']);
+            // Update product stock
+            $product->increment('current_stock', $productData['production_quantity']);
 
-        // Automatically create a batch for labeling
-        $batch = Batch::createFromManufacturingOrder($manufacturingOrder);
+            // Automatically create a batch for labeling
+            $batch = Batch::createFromManufacturingOrder($manufacturingOrder);
 
-        // Return manufacturing order data for dynamic addition
-        $orderData = [
-            'id' => $manufacturingOrder->id,
-            'batch_number' => $manufacturingOrder->batch_number,
-            'batch' => [
-                'id' => $batch->id,
-                'batch_number' => $batch->batch_number,
-            ],
-            'product' => [
-                'id' => $manufacturingOrder->product->id,
-                'name' => $manufacturingOrder->product->name,
-                'sku' => $manufacturingOrder->product->sku,
-            ],
-            'production_quantity' => $manufacturingOrder->production_quantity,
-            'stock_before' => $manufacturingOrder->stock_before,
-            'stock_after' => $manufacturingOrder->stock_after,
-            'manufacturing_date' => $manufacturingOrder->manufacturing_date->format('Y-m-d'),
-            'expiry_date' => $manufacturingOrder->expiry_date ? $manufacturingOrder->expiry_date->format('Y-m-d') : null,
-            'status' => $manufacturingOrder->status,
-            'notes' => $manufacturingOrder->notes,
-            'created_at' => $manufacturingOrder->created_at,
-            'updated_at' => $manufacturingOrder->updated_at,
-        ];
+            $createdOrders[] = [
+                'id' => $manufacturingOrder->id,
+                'batch_number' => $manufacturingOrder->batch_number,
+                'batch' => [
+                    'id' => $batch->id,
+                    'batch_number' => $batch->batch_number,
+                ],
+                'product' => [
+                    'id' => $manufacturingOrder->product->id,
+                    'name' => $manufacturingOrder->product->name,
+                    'sku' => $manufacturingOrder->product->sku,
+                ],
+                'production_quantity' => $manufacturingOrder->production_quantity,
+                'manufacturing_date' => $manufacturingOrder->manufacturing_date->format('Y-m-d'),
+                'expiry_date' => $manufacturingOrder->expiry_date ? $manufacturingOrder->expiry_date->format('Y-m-d') : null,
+                'created_at' => $manufacturingOrder->created_at,
+                'updated_at' => $manufacturingOrder->updated_at,
+            ];
+        }
 
-        return redirect()->route('manufacturing.index')->with('newOrder', $orderData);
+        return redirect()->route('manufacturing.index')->with('newOrders', $createdOrders);
     }
 
     /**
@@ -121,12 +129,8 @@ class ManufacturingOrderController extends Controller
                     'sku' => $manufacturingOrder->product->sku,
                 ],
                 'production_quantity' => $manufacturingOrder->production_quantity,
-                'stock_before' => $manufacturingOrder->stock_before,
-                'stock_after' => $manufacturingOrder->stock_after,
                 'manufacturing_date' => $manufacturingOrder->manufacturing_date->format('Y-m-d'),
                 'expiry_date' => $manufacturingOrder->expiry_date ? $manufacturingOrder->expiry_date->format('Y-m-d') : null,
-                'status' => $manufacturingOrder->status,
-                'notes' => $manufacturingOrder->notes,
                 'created_at' => $manufacturingOrder->created_at,
                 'updated_at' => $manufacturingOrder->updated_at,
             ],
@@ -138,14 +142,9 @@ class ManufacturingOrderController extends Controller
      */
     public function update(Request $request, ManufacturingOrder $manufacturingOrder)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
-        $manufacturingOrder->update($validated);
-
-        return redirect()->route('manufacturing.index')->with('success', 'Manufacturing order updated successfully.');
+        // Manufacturing orders are immutable after creation
+        // If updates are needed in the future, add specific fields here
+        return redirect()->route('manufacturing.index')->with('error', 'Manufacturing orders cannot be modified.');
     }
 
     /**
@@ -153,11 +152,9 @@ class ManufacturingOrderController extends Controller
      */
     public function destroy(ManufacturingOrder $manufacturingOrder)
     {
-        // Revert stock changes if order is deleted
-        if ($manufacturingOrder->status === 'completed') {
-            $product = $manufacturingOrder->product;
-            $product->decrement('current_stock', $manufacturingOrder->production_quantity);
-        }
+        // Revert stock changes when deleting
+        $product = $manufacturingOrder->product;
+        $product->decrement('current_stock', $manufacturingOrder->production_quantity);
 
         $manufacturingOrder->delete();
 

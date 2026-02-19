@@ -32,10 +32,10 @@ export default function Dashboard() {
         {
             id: 4,
             name: 'STORE MANAGEMENT',
-            description: 'View store-wise stock, batch inventory levels, movement history, and receive low stock alerts.',
+            description: 'Transfer manufactured batches to stores, track stock movements, and manage store locations.',
             color: 'bg-green-600',
             image: '/images/Store.png',
-            link: '/stores',
+            link: '/stock-transfers',
         },
         {
             id: 5,

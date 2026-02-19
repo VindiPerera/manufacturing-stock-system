@@ -81,7 +81,9 @@ export default function LowStockAlertsTable({ products }) {
                                             ></div>
                                         </div>
                                         <span className="text-xs font-semibold text-slate-600 w-12">
-                                            {product.stock_percentage.toFixed(0)}%
+                                            {typeof product.stock_percentage === 'number' 
+                                                ? product.stock_percentage.toFixed(0) 
+                                                : '0'}%
                                         </span>
                                     </div>
                                 </td>

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Index({ auth, batches, stores }) {
@@ -78,19 +78,23 @@ export default function Index({ auth, batches, stores }) {
             return;
         }
 
-        setData('items', items);
-        
-        // Submit the form
-        post(route('stock-transfers.store'), {
-            data: {
-                ...data,
-                items,
-            },
+        // Submit using router.post
+        router.post(route('stock-transfers.store'), {
+            batch_number: data.batch_number,
+            to_store_id: data.to_store_id,
+            transfer_date: data.transfer_date,
+            items: items,
+            notes: data.notes,
+        }, {
+            preserveScroll: true,
             onSuccess: () => {
                 reset();
                 setSelectedBatch(null);
                 setSelectedItems({});
             },
+            onError: (errors) => {
+                console.error('Transfer failed:', errors);
+            }
         });
     };
 

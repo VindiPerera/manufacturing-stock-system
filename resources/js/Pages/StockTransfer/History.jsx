@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
+import React from 'react';
 
 export default function History({ auth, transfers }) {
     const [expandedTransfer, setExpandedTransfer] = useState(null);
@@ -85,8 +86,8 @@ export default function History({ auth, transfers }) {
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {transfers.map((transfer) => (
-                                            <>
-                                                <tr key={transfer.id} className="hover:bg-gray-50">
+                                            <React.Fragment key={transfer.id}>
+                                                <tr className="hover:bg-gray-50">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                         {transfer.transfer_number}
                                                     </td>
@@ -139,8 +140,8 @@ export default function History({ auth, transfers }) {
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody className="divide-y divide-gray-200">
-                                                                                {transfer.items.map((item, idx) => (
-                                                                                    <tr key={idx}>
+                                                                                {transfer.items.map((item) => (
+                                                                                    <tr key={`${transfer.id}-${item.batch_id}-${item.product_id}`}>
                                                                                         <td className="px-4 py-2 text-sm text-gray-900">{item.product_name}</td>
                                                                                         <td className="px-4 py-2 text-sm text-gray-600">{item.product_sku}</td>
                                                                                         <td className="px-4 py-2 text-sm text-gray-600">{item.batch_number}</td>
@@ -163,7 +164,7 @@ export default function History({ auth, transfers }) {
                                                         </td>
                                                     </tr>
                                                 )}
-                                            </>
+                                            </React.Fragment>
                                         ))}
                                     </tbody>
                                 </table>

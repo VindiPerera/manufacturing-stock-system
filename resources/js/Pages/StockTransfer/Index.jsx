@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Index({ auth, batches, stores }) {
@@ -103,6 +103,22 @@ export default function Index({ auth, batches, stores }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Navigation Buttons */}
+                    <div className="mb-6 flex gap-3 justify-end">
+                        <Link
+                            href={route('stock-transfers.history')}
+                            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition"
+                        >
+                            View Transfer History
+                        </Link>
+                        {/* <Link
+                            href={route('stock-transfers.stores')}
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition"
+                        >
+                            Manage Stores
+                        </Link> */}
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left Panel - Available Batches */}
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">

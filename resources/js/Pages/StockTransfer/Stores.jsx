@@ -32,15 +32,33 @@ export default function Stores({ auth, stores }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Navigation Buttons */}
+                    <div className="mb-6 flex gap-3 justify-end">
+                        <Link
+                            href={route('stock-transfers.index')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition"
+                        >
+                            New Transfer
+                        </Link>
+                        <Link
+                            href={route('stock-transfers.history')}
+                            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition"
+                        >
+                            View Transfer History
+                        </Link>
+                    </div>
+
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
                             <h3 className="text-lg font-semibold">All Stores</h3>
-                            <button
-                                onClick={() => setShowAddModal(true)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition"
-                            >
-                                Add Store
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition"
+                                >
+                                    Add Store
+                                </button>
+                            </div>
                         </div>
 
                         {stores.length === 0 ? (

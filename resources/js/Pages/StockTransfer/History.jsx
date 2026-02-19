@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function History({ auth, transfers }) {
@@ -27,6 +27,22 @@ export default function History({ auth, transfers }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Navigation Buttons */}
+                    <div className="mb-6 flex gap-3 justify-end">
+                        <Link
+                            href={route('stock-transfers.index')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition"
+                        >
+                            New Transfer
+                        </Link>
+                        {/* <Link
+                            href={route('stock-transfers.stores')}
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-md transition"
+                        >
+                            Manage Stores
+                        </Link> */}
+                    </div>
+
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200">
                             <h3 className="text-lg font-semibold">All Stock Transfers</h3>

@@ -108,6 +108,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulkDelete');
 
     // Manufacturing Management Routes
+    Route::get('/manufacturing/next-batch-number', [ManufacturingOrderController::class, 'getNextBatchNumber'])->name('manufacturing.nextBatchNumber');
     Route::resource('manufacturing', ManufacturingOrderController::class);
 
     // Batch & Labeling Routes

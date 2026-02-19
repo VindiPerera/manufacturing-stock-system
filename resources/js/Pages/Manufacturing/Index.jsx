@@ -8,7 +8,6 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
     const [showAddModal, setShowAddModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({
-        status: '',
         product: '',
         date: '',
     });
@@ -27,11 +26,6 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
         }
     }, [flash]);
 
-    // Get unique statuses
-    const statuses = useMemo(() => {
-        return [...new Set(orders.map(o => o.status))].filter(Boolean);
-    }, [orders]);
-
     // Filter orders based on search and filters
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
@@ -40,10 +34,9 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                 order.product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 order.product.sku.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesStatus = !filters.status || order.status === filters.status;
             const matchesProduct = !filters.product || order.product.id.toString() === filters.product;
 
-            return matchesSearch && matchesStatus && matchesProduct;
+            return matchesSearch && matchesProduct;
         });
     }, [orders, searchQuery, filters]);
 
@@ -56,7 +49,7 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
 
     const handleResetFilters = () => {
         setSearchQuery('');
-        setFilters({ status: '', product: '', date: '' });
+        setFilters({ product: '', date: '' });
     };
 
     const handleDeleteOrder = (orderId) => {
@@ -67,26 +60,6 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                 }
             });
         }
-    };
-
-    const getStatusColor = (status) => {
-        const colors = {
-            pending: 'bg-yellow-500',
-            in_progress: 'bg-blue-500',
-            completed: 'bg-green-500',
-            cancelled: 'bg-red-500'
-        };
-        return colors[status] || 'bg-gray-500';
-    };
-
-    const getStatusText = (status) => {
-        const texts = {
-            pending: 'Pending',
-            in_progress: 'In Progress',
-            completed: 'Completed',
-            cancelled: 'Cancelled'
-        };
-        return texts[status] || status;
     };
 
     return (
@@ -141,19 +114,6 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                     {/* Filters */}
                     <div className="flex gap-4 mb-8">
                         <select
-                            value={filters.status}
-                            onChange={(e) => handleFilterChange('status', e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">Filter by Status</option>
-                            {statuses.map(status => (
-                                <option key={status} value={status}>
-                                    {getStatusText(status)}
-                                </option>
-                            ))}
-                        </select>
-
-                        <select
                             value={filters.product}
                             onChange={(e) => handleFilterChange('product', e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -166,7 +126,7 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                             ))}
                         </select>
 
-                        {(filters.status || filters.product || searchQuery) && (
+                        {(filters.product || searchQuery) && (
                             <button
                                 onClick={handleResetFilters}
                                 className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
@@ -194,9 +154,6 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                                             <h3 className="font-bold text-lg text-gray-900 truncate">
                                                 {order.batch_number}
                                             </h3>
-                                            <div className={`${getStatusColor(order.status)} text-white px-2 py-1 rounded-full text-xs font-bold`}>
-                                                {getStatusText(order.status)}
-                                            </div>
                                         </div>
                                         <p className="text-sm font-medium text-gray-700">
                                             {order.product.name}
@@ -211,13 +168,6 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                                         <div className="flex justify-between">
                                             <span className="text-sm text-gray-600">Quantity:</span>
                                             <span className="font-medium">{order.production_quantity}</span>
-                                        </div>
-                                        
-                                        <div className="flex justify-between">
-                                            <span className="text-sm text-gray-600">Stock Change:</span>
-                                            <span className="font-medium text-green-600">
-                                                {order.stock_before} → {order.stock_after}
-                                            </span>
                                         </div>
 
                                         <div className="flex justify-between">

@@ -2,26 +2,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 
 export default function ManufacturingShow({ manufacturingOrder }) {
-    const getStatusColor = (status) => {
-        const colors = {
-            pending: 'bg-yellow-500',
-            in_progress: 'bg-blue-500',
-            completed: 'bg-green-500',
-            cancelled: 'bg-red-500'
-        };
-        return colors[status] || 'bg-gray-500';
-    };
-
-    const getStatusText = (status) => {
-        const texts = {
-            pending: 'Pending',
-            in_progress: 'In Progress',
-            completed: 'Completed',
-            cancelled: 'Cancelled'
-        };
-        return texts[status] || status;
-    };
-
     return (
         <AuthenticatedLayout
             header={
@@ -57,9 +37,6 @@ export default function ManufacturingShow({ manufacturingOrder }) {
                                 <h1 className="text-2xl font-bold text-gray-900">
                                     {manufacturingOrder.batch_number}
                                 </h1>
-                                <div className={`${getStatusColor(manufacturingOrder.status)} text-white px-4 py-2 rounded-full text-sm font-bold`}>
-                                    {getStatusText(manufacturingOrder.status)}
-                                </div>
                             </div>
                         </div>
 
@@ -91,16 +68,6 @@ export default function ManufacturingShow({ manufacturingOrder }) {
                                 <div>
                                     <label className="text-sm font-medium text-gray-600">Production Quantity</label>
                                     <p className="text-lg font-semibold text-green-600">{manufacturingOrder.production_quantity}</p>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium text-gray-600">Stock Before</label>
-                                    <p className="text-lg">{manufacturingOrder.stock_before}</p>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium text-gray-600">Stock After</label>
-                                    <p className="text-lg font-semibold">{manufacturingOrder.stock_after}</p>
                                 </div>
                             </div>
 

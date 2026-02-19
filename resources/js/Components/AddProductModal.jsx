@@ -17,7 +17,6 @@ export default function AddProductModal({ onClose, onSuccess }) {
         barcode: generateBarcode(), // Auto-generate on initialization
         description: '',
         minimum_stock: '0',
-        current_stock: '0',
         price: '0.00',
     });
 

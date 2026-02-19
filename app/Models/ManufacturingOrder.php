@@ -14,12 +14,8 @@ class ManufacturingOrder extends Model
         'product_id',
         'batch_number',
         'production_quantity',
-        'stock_before',
-        'stock_after',
         'manufacturing_date',
         'expiry_date',
-        'status',
-        'notes',
     ];
 
     protected $casts = [

@@ -10,7 +10,6 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
         barcode: '',
         description: '',
         minimum_stock: '',
-        current_stock: '',
         price: '',
     });
 
@@ -31,7 +30,6 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
                 barcode: product.barcode || '',
                 description: product.description || '',
                 minimum_stock: product.minimum_stock || '0',
-                current_stock: product.current_stock || product.stock || '0',
                 price: product.price || '0',
             });
             setImagePreview(product.image || null);
@@ -75,7 +73,6 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
         form.append('barcode', formData.barcode);
         form.append('description', formData.description);
         form.append('minimum_stock', formData.minimum_stock || '0');
-        form.append('current_stock', formData.current_stock || '0');
         form.append('price', formData.price || '0');
         form.append('_method', 'PUT');
 

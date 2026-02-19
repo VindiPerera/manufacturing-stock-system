@@ -1,34 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-export default function StoreStockModal({ isOpen, onClose, totalQuantity, totalBatches, initialQuantity, soldQuantity }) {
-    const [batches, setBatches] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            fetchStoreStockDetails();
-        }
-    }, [isOpen]);
-
-    const fetchStoreStockDetails = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('/api/analytics/store-stock-details');
-            const data = await response.json();
-            if (data.success) {
-                setBatches(data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching store stock details:', error);
-        }
-        setLoading(false);
-    };
-
+export default function StoreStockModal({ isOpen, onClose, totalQuantity, totalBatches, initialQuantity, soldQuantity, batches = [] }) {
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-green-600 text-white p-6 flex justify-between items-center">
                     <div>
@@ -61,11 +38,7 @@ export default function StoreStockModal({ isOpen, onClose, totalQuantity, totalB
 
                 {/* Content */}
                 <div className="p-6">
-                    {loading ? (
-                        <div className="text-center py-8">
-                            <p className="text-gray-600">Loading store stock details...</p>
-                        </div>
-                    ) : batches.length === 0 ? (
+                    {batches.length === 0 ? (
                         <div className="text-center py-8 bg-gray-50 rounded-lg">
                             <p className="text-gray-600">No batches in stock</p>
                         </div>

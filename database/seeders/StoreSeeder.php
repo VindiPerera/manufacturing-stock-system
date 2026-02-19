@@ -17,27 +17,8 @@ class StoreSeeder extends Seeder
     {
         Store::firstOrCreate(
             ['name' => 'Main Store'],
-            ['location' => 'New York']
+            ['location' => 'Office']
         );
 
-        Store::firstOrCreate(
-            ['name' => 'Downtown Branch'],
-            ['location' => 'Downtown']
-        );
-
-        Store::firstOrCreate(
-            ['name' => 'Warehouse #1'],
-            ['location' => 'Industrial Zone']
-        );
-
-        Store::firstOrCreate(
-            ['name' => 'Retail Shop'],
-            ['location' => 'Shopping Mall']
-        );
-
-        Store::firstOrCreate(
-            ['name' => 'Distribution Center'],
-            ['location' => 'Logistics Hub']
-        );
     }
 }

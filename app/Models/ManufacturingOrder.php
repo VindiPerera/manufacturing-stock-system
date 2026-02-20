@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Models\Product;
+use App\Models\Batch;
 
 class ManufacturingOrder extends Model
 {
@@ -14,8 +16,12 @@ class ManufacturingOrder extends Model
         'product_id',
         'batch_number',
         'production_quantity',
+        'stock_before',
+        'stock_after',
         'manufacturing_date',
         'expiry_date',
+        'status',
+        'notes',
     ];
 
     protected $casts = [
@@ -38,23 +44,23 @@ class ManufacturingOrder extends Model
     // Generate unique batch number
     public static function generateBatchNumber()
     {
+        // Default legacy generator (uses BATCH prefix)
         $prefix = 'BATCH';
         $date = Carbon::now()->format('Ymd');
         $datePrefix = $prefix . '-' . $date . '-';
-        
+
         // Find the highest existing batch number for today
         $lastBatch = self::where('batch_number', 'like', $datePrefix . '%')
             ->orderBy('batch_number', 'desc')
             ->first();
-        
+
         if ($lastBatch) {
-            // Extract the number part and increment
             $lastNumber = (int) substr($lastBatch->batch_number, -3);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
+
         return $datePrefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
@@ -64,7 +70,37 @@ class ManufacturingOrder extends Model
         parent::boot();
 
         static::creating(function ($manufacturingOrder) {
-            if (empty($manufacturingOrder->batch_number)) {
+            // If a product is specified, generate batch number using the product SKU as the prefix
+            if (empty($manufacturingOrder->batch_number) && !empty($manufacturingOrder->product_id)) {
+                $product = Product::find($manufacturingOrder->product_id);
+                $manufacturingDate = $manufacturingOrder->manufacturing_date ?? Carbon::now();
+
+                if ($product) {
+                    $dateString = Carbon::parse($manufacturingDate)->format('Ymd');
+
+                    // Use full SKU as prefix (remove whitespace)
+                    $skuPrefix = strtoupper(preg_replace('/\s+/', '', $product->sku ?? 'PROD'));
+
+                    // Look for the last batch in the batches table using this SKU and date
+                    $likePrefix = $skuPrefix . '-' . $dateString . '-%';
+                    $lastBatch = Batch::where('batch_number', 'like', $likePrefix)
+                        ->orderBy('serial_number', 'desc')
+                        ->first();
+
+                    if ($lastBatch) {
+                        $lastNumber = (int) substr($lastBatch->batch_number, -3);
+                        $serial = $lastNumber + 1;
+                    } else {
+                        $serial = 1;
+                    }
+
+                    $manufacturingOrder->batch_number = sprintf('%s-%s-%03d', $skuPrefix, $dateString, $serial);
+                } else {
+                    // fallback to legacy
+                    $manufacturingOrder->batch_number = self::generateBatchNumber();
+                }
+            } elseif (empty($manufacturingOrder->batch_number)) {
+                // fallback if no product specified
                 $manufacturingOrder->batch_number = self::generateBatchNumber();
             }
         });

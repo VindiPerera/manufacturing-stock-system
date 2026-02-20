@@ -273,9 +273,38 @@ class ProductController extends Controller
      */
     public function lowStock()
     {
-        $products = Product::lowStock()->get();
+        $products = Product::lowStock()->get()->map(function ($product) {
+            // Handle image path properly
+            $imageUrl = null;
+            if ($product->image) {
+                if (str_starts_with($product->image, '/storage/')) {
+                    $imageUrl = $product->image;
+                } else {
+                    $imageUrl = Storage::url($product->image);
+                }
+            }
 
-        return response()->json($products);
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'category' => $product->category,
+                'unit' => $product->unit,
+                'barcode' => $product->barcode,
+                'description' => $product->description,
+                'minimum_stock' => $product->minimum_stock,
+                'stock' => $product->current_stock,
+                'price' => $product->price,
+                'image' => $imageUrl,
+                'created_at' => $product->created_at,
+                'updated_at' => $product->updated_at,
+            ];
+        });
+
+        return Inertia::render('Products/LowStock', [
+            'products' => $products,
+            'totalLowStock' => count($products),
+        ]);
     }
 
     /**

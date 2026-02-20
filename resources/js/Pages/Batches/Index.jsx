@@ -139,6 +139,8 @@ export default function BatchIndex({ batches: initialBatches = [], stats = {}, f
                             <div className="text-2xl font-bold text-red-600">{stats.expiring_soon || 0}</div>
                             <div className="text-sm text-gray-500">Expiring Soon</div>
                         </div>
+
+                        
                     </div>
 
                     {/* Search and Filters */}

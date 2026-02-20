@@ -7,17 +7,27 @@ use App\Models\Product;
 use App\Models\Batch;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class ManufacturingOrderController extends Controller
 {
     /**
-     * Get next batch number
+     * Get next batch number (optionally product-specific using SKU prefix)
      */
-    public function getNextBatchNumber()
+    public function getNextBatchNumber(Request $request)
     {
-        return response()->json([
-            'batch_number' => ManufacturingOrder::generateBatchNumber()
-        ]);
+        $productId = $request->query('product_id');
+
+        if ($productId) {
+            $product = Product::find($productId);
+            if ($product) {
+                $batchData = Batch::generateBatchNumber($product);
+                return response()->json(['batch_number' => $batchData['batch_number']]);
+            }
+        }
+
+        // Fallback: no product known yet — just acknowledge SKU-based generation
+        return response()->json(['batch_number' => null]);
     }
 
     /**
@@ -59,7 +69,6 @@ class ManufacturingOrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'batch_number' => 'required|string',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.production_quantity' => 'required|integer|min:1',
@@ -74,9 +83,13 @@ class ManufacturingOrderController extends Controller
             // Get the product
             $product = Product::findOrFail($productData['product_id']);
 
+            // Generate a unique SKU-based batch number for this product
+            $manufacturingDate = Carbon::parse($productData['manufacturing_date']);
+            $batchData = Batch::generateBatchNumber($product, $manufacturingDate);
+
             // Create the manufacturing order
             $manufacturingOrder = ManufacturingOrder::create([
-                'batch_number' => $validated['batch_number'],
+                'batch_number' => $batchData['batch_number'],
                 'product_id' => $productData['product_id'],
                 'production_quantity' => $productData['production_quantity'],
                 'manufacturing_date' => $productData['manufacturing_date'],

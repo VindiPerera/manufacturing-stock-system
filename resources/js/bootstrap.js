@@ -3,6 +3,10 @@ window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+// CSRF protection disabled for development
+// Commenting out CSRF token handling since we've disabled CSRF protection
+
+/*
 // Set CSRF token from meta tag
 function setCSRFToken() {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -35,3 +39,4 @@ window.axios.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+*/

@@ -85,7 +85,6 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
             const response = await fetch(`/products/${product.id}`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
                 },
                 body: form

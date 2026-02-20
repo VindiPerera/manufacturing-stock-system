@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
         
+        // Disable CSRF protection for all routes (DEVELOPMENT ONLY)
+        $middleware->validateCsrfTokens(except: [
+            '*', // Disable for all routes - REMOVE IN PRODUCTION!
+        ]);
+        
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);

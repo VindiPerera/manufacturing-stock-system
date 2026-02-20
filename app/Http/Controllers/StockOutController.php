@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Batch;
 use App\Models\StockOutTransaction;
+use App\Models\StockTransferItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -118,6 +119,21 @@ class StockOutController extends Controller
                 // Also decrement the product's total current stock
                 $batch->product->decrement('current_stock', $quantityToDeduct);
 
+                // Reduce store remaining quantity from stock transfers
+                $remainingToDeduct = $quantityToDeduct;
+                $stockTransferItems = StockTransferItem::where('batch_id', $batch->id)
+                    ->where('store_remaining_quantity', '>', 0)
+                    ->orderBy('created_at', 'asc') // FIFO approach
+                    ->get();
+
+                foreach ($stockTransferItems as $transferItem) {
+                    if ($remainingToDeduct <= 0) break;
+                    
+                    $canDeduct = min($remainingToDeduct, $transferItem->store_remaining_quantity);
+                    $transferItem->decrement('store_remaining_quantity', $canDeduct);
+                    $remainingToDeduct -= $canDeduct;
+                }
+
                 // Log the transaction — $batch->quantity is already decremented in memory by decrement()
                 StockOutTransaction::create([
                     'batch_id' => $batch->id,
@@ -179,6 +195,10 @@ class StockOutController extends Controller
         }
 
         $transactions = $query->paginate(50)->through(function ($transaction) {
+            // Get store remaining quantity for this batch from most recent transfer
+            $storeRemaining = StockTransferItem::where('batch_id', $transaction->batch_id)
+                ->sum('store_remaining_quantity');
+
             return [
                 'id' => $transaction->id,
                 'batch_number' => $transaction->batch->batch_number,
@@ -186,6 +206,7 @@ class StockOutController extends Controller
                 'product_sku' => $transaction->batch->product->sku,
                 'quantity' => $transaction->quantity,
                 'remaining_quantity' => $transaction->remaining_quantity,
+                'store_remaining_quantity' => $storeRemaining,
                 'reason' => $transaction->reason,
                 'user_name' => $transaction->user ? $transaction->user->name : 'System',
                 'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),

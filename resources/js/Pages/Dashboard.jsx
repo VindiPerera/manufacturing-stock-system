@@ -61,22 +61,15 @@ export default function Dashboard() {
             image: '/images/stockout.png',
             link: '/stock-out/history',
         },
-        // {
-        //     id: 7,
-        //     name: 'CATEGORIES',
-        //     description: 'Organize products into categories for better structure and easy navigation throughout the system.',
-        //     color: 'bg-indigo-600',
-        //     image: '/images/product-png.png',
-        //     link: '/categories',
-        // },
-        // {
-        //     id: 8,
-        //     name: 'USERS',
-        //     description: 'Manage user accounts, roles, and permissions. Control access to different modules and features.',
-        //     color: 'bg-pink-500',
-        //     image: '/images/users.png',
-        //     link: '/users',
-        // },
+        {
+            id: 9,
+            name: 'LOW STOCK PRODUCTS',
+            description: 'View products below minimum stock level. Monitor inventory alerts and manage stock replenishment.',
+            color: 'bg-pink-600',
+            image: '/images/product-png.png',
+            link: '/products/low-stock',
+        },
+        
     ];
 
     return (

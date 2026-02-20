@@ -35,6 +35,7 @@ Route::get('/dashboard', function () {
             'color' => 'bg-blue-900',
             'image' => '/images/Manufacturing.png',
             'link' => '/manufacturing',
+        // Low stock feature will be inserted after STOCK OUT HISTORY below
         ],
         [
             'id' => 3,
@@ -86,6 +87,8 @@ Route::get('/dashboard', function () {
         ],
     ];
 
+    
+
     return Inertia::render('Dashboard', [
         'features' => $features
     ]);
@@ -111,10 +114,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Product Management Routes
-    Route::resource('products', ProductController::class);
+    // Specific routes must come BEFORE resource route to avoid conflict
     Route::get('/products/low-stock', [ProductController::class, 'lowStock'])->name('products.lowStock');
     Route::get('/products/categories', [ProductController::class, 'categories'])->name('products.categories');
     Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulkDelete');
+    Route::resource('products', ProductController::class);
 
     // Manufacturing Management Routes
     Route::get('/manufacturing/next-batch-number', [ManufacturingOrderController::class, 'getNextBatchNumber'])->name('manufacturing.nextBatchNumber');

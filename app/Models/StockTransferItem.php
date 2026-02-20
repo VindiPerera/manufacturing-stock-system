@@ -11,10 +11,12 @@ class StockTransferItem extends Model
         'product_id',
         'batch_id',
         'quantity_transferred',
+        'store_remaining_quantity',
     ];
 
     protected $casts = [
         'quantity_transferred' => 'integer',
+        'store_remaining_quantity' => 'integer',
     ];
 
     // Relationship with StockTransfer

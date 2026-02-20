@@ -115,6 +115,7 @@ class StockTransferController extends Controller
                     'product_id' => $item['product_id'],
                     'batch_id' => $item['batch_id'],
                     'quantity_transferred' => $item['quantity_transferred'],
+                    'store_remaining_quantity' => $item['quantity_transferred'], // Initially, all transferred quantity remains in store
                 ]);
 
                 // Update batch transferred quantity

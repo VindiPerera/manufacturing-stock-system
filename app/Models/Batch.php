@@ -17,7 +17,6 @@ class Batch extends Model
         'product_code',
         'serial_number',
         'quantity',
-        'transferred_quantity',
         'manufacturing_date',
         'expiry_date',
         'label_printed',
@@ -31,7 +30,6 @@ class Batch extends Model
         'label_printed' => 'boolean',
         'serial_number' => 'integer',
         'quantity' => 'integer',
-        'transferred_quantity' => 'integer',
         'label_print_count' => 'integer',
     ];
 
@@ -52,22 +50,6 @@ class Batch extends Model
     }
 
     /**
-     * Relationship with StockTransferItems
-     */
-    public function stockTransferItems()
-    {
-        return $this->hasMany(StockTransferItem::class);
-    }
-
-    /**
-     * Get available quantity (not yet transferred)
-     */
-    public function getAvailableQuantityAttribute()
-    {
-        return $this->quantity - $this->transferred_quantity;
-    }
-
-    /**
      * Generate a unique batch number
      * Format: PRODUCTCODE-YYYYMMDD-### (e.g., JUICE-20260217-001)
      * 
@@ -82,13 +64,11 @@ class Batch extends Model
         $date = $manufacturingDate ?? Carbon::now();
         $dateString = $date->format('Ymd');
         
-        // Generate product code from SKU or name
-        // Remove special characters and take first part, uppercase
+        // Use full SKU (sanitized) as the prefix so batch numbers are clearly tied to SKU
         $productCode = self::generateProductCode($product);
         
-        // Find the last batch created today for this product code
-        $lastBatch = self::where('product_code', $productCode)
-            ->whereDate('manufacturing_date', $date->toDateString())
+        // Find the last batch created today for this SKU prefix
+        $lastBatch = self::where('batch_number', 'like', $productCode . '-' . $dateString . '-%')
             ->orderBy('serial_number', 'desc')
             ->first();
         
@@ -119,30 +99,17 @@ class Batch extends Model
      */
     public static function generateProductCode(Product $product): string
     {
-        // Try to use SKU first
-        if ($product->sku) {
-            // Extract meaningful part from SKU (e.g., "SKU-COFFEE-001" -> "COFFEE")
-            $skuParts = explode('-', $product->sku);
-            
-            // If SKU has format like SKU-XXXX-###, use the middle part
-            if (count($skuParts) >= 2) {
-                // Skip 'SKU' prefix if exists
-                $codeIndex = strtoupper($skuParts[0]) === 'SKU' ? 1 : 0;
-                if (isset($skuParts[$codeIndex])) {
-                    return strtoupper($skuParts[$codeIndex]);
-                }
-            }
-            
-            // Otherwise use first part of SKU
-            return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $skuParts[0]));
+        // Prefer full SKU as prefix so batch numbers directly reference SKU
+        if (!empty($product->sku)) {
+            // Keep hyphens in SKU but remove whitespace
+            return strtoupper(preg_replace('/\s+/', '', $product->sku));
         }
-        
-        // Fallback: Generate from product name
-        // Take first word or first 6 characters, uppercase
+
+        // Fallback: Generate from product name (first word up to 6 chars)
         $name = preg_replace('/[^A-Za-z0-9\s]/', '', $product->name);
         $words = explode(' ', trim($name));
         $code = strtoupper(substr($words[0], 0, 6));
-        
+
         return $code ?: 'PROD';
     }
 
@@ -156,10 +123,34 @@ class Batch extends Model
     {
         $product = $order->product;
         $manufacturingDate = $order->manufacturing_date ?? Carbon::now();
-        
-        // Generate unique batch number
+        // If manufacturing order already computed a batch_number, reuse it so both sections match
+        if (!empty($order->batch_number)) {
+            $batchNumber = $order->batch_number;
+
+            // Try to parse serial and product code from batch number
+            $serial = null;
+            $productCode = null;
+            if (preg_match('/^(.+)-(\d{8})-(\d{3})$/', $batchNumber, $matches)) {
+                $productCode = strtoupper(preg_replace('/\s+/', '', $matches[1]));
+                $serial = (int) $matches[3];
+            }
+
+            return self::create([
+                'manufacturing_order_id' => $order->id,
+                'product_id' => $product->id,
+                'batch_number' => $batchNumber,
+                'product_code' => $productCode ?? self::generateProductCode($product),
+                'serial_number' => $serial ?? 0,
+                'quantity' => $order->production_quantity,
+                'manufacturing_date' => $manufacturingDate,
+                'expiry_date' => $order->expiry_date,
+                'notes' => $order->notes,
+            ]);
+        }
+
+        // Otherwise generate a new batch number using SKU prefix
         $batchData = self::generateBatchNumber($product, $manufacturingDate);
-        
+
         return self::create([
             'manufacturing_order_id' => $order->id,
             'product_id' => $product->id,

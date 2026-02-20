@@ -23,10 +23,10 @@ export default function Dashboard() {
         },
         {
             id: 3,
-            name: 'BATCH & LABELING',
+            name: 'LABELING',
             description: 'Manage batch creation, print labels with product info and barcode. Reprint, search, and view batch history.',
             color: 'bg-yellow-400',
-            image: '/images/product-png.png',
+            image: '/images/label.png',
             link: '/batches',
         },
         {
@@ -42,7 +42,7 @@ export default function Dashboard() {
             name: 'BARCODE SCANNING',
             description: 'Scan product barcodes, reduce stock automatically, and record stock-out transactions with batch tracking.',
             color: 'bg-purple-900',
-            image: '/images/product-png.png',
+            image: '/images/barcode.png',
             link: '/stock-out',
         },
         {
@@ -50,7 +50,7 @@ export default function Dashboard() {
             name: 'TRANSFER HISTORY',
             description: 'View all batch transfer records to stores. Track transfer numbers, quantities, destinations, status and detailed item breakdown.',
             color: 'bg-teal-600',
-            image: '/images/Store.png',
+            image: '/images/transferhis.png',
             link: '/stock-transfers/history',
         },
         {
@@ -58,7 +58,7 @@ export default function Dashboard() {
             name: 'STOCK OUT HISTORY',
             description: 'View the complete history of stock-out transactions, filter by date or product, and track all barcode-scanned stock removals.',
             color: 'bg-orange-500',
-            image: '/images/report.png',
+            image: '/images/stockout.png',
             link: '/stock-out/history',
         },
         // {

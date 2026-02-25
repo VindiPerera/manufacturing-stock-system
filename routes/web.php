@@ -7,6 +7,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -120,6 +121,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulkDelete');
     Route::resource('products', ProductController::class);
 
+    // Category Management Routes
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
     // Manufacturing Management Routes
     Route::get('/manufacturing/next-batch-number', [ManufacturingOrderController::class, 'getNextBatchNumber'])->name('manufacturing.nextBatchNumber');
     Route::resource('manufacturing', ManufacturingOrderController::class);
@@ -138,6 +144,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/stock-out', [StockOutController::class, 'index'])->name('stock-out.index');
     Route::post('/stock-out/scan', [StockOutController::class, 'scan'])->name('stock-out.scan');
     Route::get('/stock-out/history', [StockOutController::class, 'history'])->name('stock-out.history');
+    Route::get('/stock-out/export-pdf', [StockOutController::class, 'exportPdf'])->name('stock-out.export-pdf');
     Route::delete('/stock-out/clear-history', [StockOutController::class, 'clearHistory'])->name('stock-out.clearHistory');
     Route::get('/stock-out/batch-info', [StockOutController::class, 'getBatchInfo'])->name('stock-out.batch-info');
 

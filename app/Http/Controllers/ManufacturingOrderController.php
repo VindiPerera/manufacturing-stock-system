@@ -8,6 +8,7 @@ use App\Models\Batch;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ManufacturingOrderController extends Controller
 {
@@ -55,7 +56,7 @@ class ManufacturingOrderController extends Controller
                 ];
             });
 
-        $products = Product::select('id', 'name', 'sku', 'current_stock')->get();
+        $products = Product::select('id', 'name', 'sku', 'category', 'current_stock')->get();
 
         return Inertia::render('Manufacturing/Index', [
             'manufacturingOrders' => $manufacturingOrders,
@@ -80,27 +81,38 @@ class ManufacturingOrderController extends Controller
 
         // Loop through each product and create manufacturing orders
         foreach ($validated['products'] as $productData) {
-            // Get the product
-            $product = Product::findOrFail($productData['product_id']);
+            // Use database transaction to ensure batch number uniqueness
+            $orderData = DB::transaction(function () use ($productData) {
+                // Get the product
+                $product = Product::findOrFail($productData['product_id']);
 
-            // Generate a unique SKU-based batch number for this product
-            $manufacturingDate = Carbon::parse($productData['manufacturing_date']);
-            $batchData = Batch::generateBatchNumber($product, $manufacturingDate);
+                // Generate a unique SKU-based batch number for this product
+                $manufacturingDate = Carbon::parse($productData['manufacturing_date']);
+                $batchData = Batch::generateBatchNumber($product, $manufacturingDate);
 
-            // Create the manufacturing order
-            $manufacturingOrder = ManufacturingOrder::create([
-                'batch_number' => $batchData['batch_number'],
-                'product_id' => $productData['product_id'],
-                'production_quantity' => $productData['production_quantity'],
-                'manufacturing_date' => $productData['manufacturing_date'],
-                'expiry_date' => $productData['expiry_date'] ?? null,
-            ]);
+                // Create the manufacturing order
+                $manufacturingOrder = ManufacturingOrder::create([
+                    'batch_number' => $batchData['batch_number'],
+                    'product_id' => $productData['product_id'],
+                    'production_quantity' => $productData['production_quantity'],
+                    'manufacturing_date' => $productData['manufacturing_date'],
+                    'expiry_date' => $productData['expiry_date'] ?? null,
+                ]);
 
-            // Update product stock
-            $product->increment('current_stock', $productData['production_quantity']);
+                // Update product stock
+                $product->increment('current_stock', $productData['production_quantity']);
 
-            // Automatically create a batch for labeling
-            $batch = Batch::createFromManufacturingOrder($manufacturingOrder);
+                // Automatically create a batch for labeling
+                $batch = Batch::createFromManufacturingOrder($manufacturingOrder);
+
+                return [
+                    'order' => $manufacturingOrder,
+                    'batch' => $batch,
+                ];
+            });
+
+            $manufacturingOrder = $orderData['order'];
+            $batch = $orderData['batch'];
 
             $createdOrders[] = [
                 'id' => $manufacturingOrder->id,
@@ -122,7 +134,9 @@ class ManufacturingOrderController extends Controller
             ];
         }
 
-        return redirect()->route('manufacturing.index')->with('newOrders', $createdOrders);
+        return back()
+            ->with('success', 'Manufacturing orders created successfully')
+            ->with('newOrders', $createdOrders);
     }
 
     /**

@@ -51,9 +51,9 @@ class Batch extends Model
 
     /**
      * Generate a unique batch number
-     * Format: PRODUCTCODE-YYYYMMDD-### (e.g., JUICE-20260217-001)
+     * Format: CATEGORY-### (e.g., Cat-001, Electronics-002)
      * 
-     * The serial number restarts at 001 for each new day per product
+     * The 3-digit number is sequential, starting from 001
      * 
      * @param Product $product
      * @param Carbon|null $manufacturingDate
@@ -61,31 +61,28 @@ class Batch extends Model
      */
     public static function generateBatchNumber(Product $product, ?Carbon $manufacturingDate = null): array
     {
-        $date = $manufacturingDate ?? Carbon::now();
-        $dateString = $date->format('Ymd');
+        // Get category name or use default
+        $category = !empty($product->category) ? $product->category : 'PROD';
         
-        // Use full SKU (sanitized) as the prefix so batch numbers are clearly tied to SKU
-        $productCode = self::generateProductCode($product);
+        // Sanitize category name (remove special characters, keep letters and numbers)
+        $categoryCode = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $category));
         
-        // Find the last batch created today for this SKU prefix
-        $lastBatch = self::where('batch_number', 'like', $productCode . '-' . $dateString . '-%')
+        // Use database locking to prevent race conditions
+        // Lock the table to ensure we get an accurate count
+        $lastBatch = self::where('product_code', $categoryCode)
+            ->lockForUpdate()
             ->orderBy('serial_number', 'desc')
             ->first();
         
         // Increment serial number or start at 1
         $serialNumber = $lastBatch ? $lastBatch->serial_number + 1 : 1;
         
-        // Format: PRODUCTCODE-YYYYMMDD-###
-        $batchNumber = sprintf(
-            '%s-%s-%03d',
-            $productCode,
-            $dateString,
-            $serialNumber
-        );
+        // Format: CATEGORY-###
+        $batchNumber = sprintf('%s-%03d', $categoryCode, $serialNumber);
         
         return [
             'batch_number' => $batchNumber,
-            'product_code' => $productCode,
+            'product_code' => $categoryCode,
             'serial_number' => $serialNumber,
         ];
     }
@@ -128,11 +125,12 @@ class Batch extends Model
             $batchNumber = $order->batch_number;
 
             // Try to parse serial and product code from batch number
+            // New format: CATEGORY-### (e.g., CAT-001)
             $serial = null;
             $productCode = null;
-            if (preg_match('/^(.+)-(\d{8})-(\d{3})$/', $batchNumber, $matches)) {
-                $productCode = strtoupper(preg_replace('/\s+/', '', $matches[1]));
-                $serial = (int) $matches[3];
+            if (preg_match('/^(.+)-(\d{3})$/', $batchNumber, $matches)) {
+                $productCode = strtoupper($matches[1]);
+                $serial = (int) $matches[2];
             }
 
             return self::create([

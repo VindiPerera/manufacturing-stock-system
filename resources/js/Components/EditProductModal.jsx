@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 
-export default function EditProductModal({ product, onClose, onSuccess }) {
+export default function EditProductModal({ product, onClose, onSuccess, categories = [] }) {
     const [formData, setFormData] = useState({
         name: '',
         sku: '',
@@ -17,7 +17,6 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
     const [loading, setLoading] = useState(false);
 
     const units = ['pcs', 'box', 'kg', 'ltr', 'meter', 'dozen', 'set', 'piece'];
-    const categories = ['Electronics', 'Clothing', 'Food', 'Beverages', 'Furniture', 'Other'];
 
     // Populate form data when product prop changes
     useEffect(() => {
@@ -236,7 +235,7 @@ export default function EditProductModal({ product, onClose, onSuccess }) {
                             >
                                 <option value="">Select Category</option>
                                 {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                    <option key={cat.id} value={cat.category_name}>{cat.category_name}</option>
                                 ))}
                             </select>
                         </div>

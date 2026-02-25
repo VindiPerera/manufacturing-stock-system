@@ -140,40 +140,83 @@ class StockTransferController extends Controller
     /**
      * Display transfer history
      */
-    public function history()
+    public function history(Request $request)
     {
-        $transfers = StockTransfer::with(['store', 'transferredByUser', 'items.product', 'items.batch'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($transfer) {
-                return [
-                    'id' => $transfer->id,
-                    'transfer_number' => $transfer->transfer_number,
-                    'batch_number' => $transfer->batch_number,
-                    'store' => [
-                        'id' => $transfer->store->id,
-                        'name' => $transfer->store->name,
-                        'location' => $transfer->store->location,
-                    ],
-                    'transferred_by' => $transfer->transferredByUser->name,
-                    'transfer_date' => $transfer->transfer_date->format('Y-m-d'),
-                    'status' => $transfer->status,
-                    'total_items' => $transfer->items->sum('quantity_transferred'),
-                    'items' => $transfer->items->map(function ($item) {
-                        return [
-                            'product_name' => $item->product->name,
-                            'product_sku' => $item->product->sku,
-                            'quantity' => $item->quantity_transferred,
-                            'batch_number' => $item->batch->batch_number,
-                        ];
-                    }),
-                    'notes' => $transfer->notes,
-                    'created_at' => $transfer->created_at,
-                ];
+        $query = StockTransfer::with(['store', 'transferredByUser', 'items.product', 'items.batch'])
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->filled('search_query')) {
+            $search = $request->search_query;
+            $query->where(function($q) use ($search) {
+                $q->where('transfer_number', 'like', "%{$search}%")
+                  ->orWhere('batch_number', 'like', "%{$search}%")
+                  ->orWhereHas('store', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
             });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('transfer_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('transfer_date', '<=', $request->date_to);
+        }
+
+        $transfers = $query->paginate(15)->withQueryString();
+
+        // Format transfers
+        $transfers->getCollection()->transform(function ($transfer) {
+            return [
+                'id' => $transfer->id,
+                'transfer_number' => $transfer->transfer_number,
+                'batch_number' => $transfer->batch_number,
+                'store' => [
+                    'id' => $transfer->store->id,
+                    'name' => $transfer->store->name,
+                    'location' => $transfer->store->location,
+                ],
+                'transferred_by' => $transfer->transferredByUser->name,
+                'transfer_date' => $transfer->transfer_date->format('Y-m-d H:i'),
+                'status' => $transfer->status,
+                'total_items' => $transfer->items->sum('quantity_transferred'),
+                'items' => $transfer->items->map(function ($item) {
+                    return [
+                        'product_name' => $item->product->name,
+                        'product_sku' => $item->product->sku,
+                        'quantity' => $item->quantity_transferred,
+                        'batch_number' => $item->batch->batch_number,
+                    ];
+                }),
+                'notes' => $transfer->notes,
+                'created_at' => $transfer->created_at,
+            ];
+        });
+
+        // Calculate stats
+        $stats = [
+            'total_transfers' => StockTransfer::count(),
+            'completed_transfers' => StockTransfer::where('status', 'completed')->count(),
+            'pending_transfers' => StockTransfer::where('status', 'pending')->count(),
+        ];
+
+        $filters = [
+            'date_from' => $request->date_from,
+            'date_to' => $request->date_to,
+            'search_query' => $request->search_query,
+            'status' => $request->status,
+        ];
 
         return Inertia::render('StockTransfer/History', [
             'transfers' => $transfers,
+            'stats' => $stats,
+            'filters' => $filters,
         ]);
     }
 

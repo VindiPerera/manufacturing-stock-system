@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 
-export default function AddManufacturingOrderModal({ products, onClose }) {
+export default function AddManufacturingOrderModal({ products, onClose, onSuccess }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
     const [productForm, setProductForm] = useState({
@@ -14,12 +14,11 @@ export default function AddManufacturingOrderModal({ products, onClose }) {
     const [validationErrors, setValidationErrors] = useState({});
     const [showDropdown, setShowDropdown] = useState(false);
 
-    // Compute batch number preview from SKU + manufacturing date (server will assign final serial)
-    const computeBatchPreview = (sku, manufacturingDate) => {
-        if (!sku || !manufacturingDate) return null;
-        const skuPrefix = sku.replace(/\s+/g, '').toUpperCase();
-        const dateStr = manufacturingDate.replace(/-/g, '');
-        return `${skuPrefix}-${dateStr}-###`;
+    // Compute batch number preview from category (server will assign final random digits)
+    const computeBatchPreview = (category, manufacturingDate) => {
+        if (!category) return null;
+        const categoryCode = category.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        return `${categoryCode}-###`;
     };
 
     // Filter products based on search term
@@ -63,6 +62,7 @@ export default function AddManufacturingOrderModal({ products, onClose }) {
             product_id: parseInt(selectedProductId),
             product_name: product.name,
             product_sku: product.sku,
+            product_category: product.category,
             current_stock: product.current_stock,
             production_quantity: parseInt(productForm.production_quantity),
             manufacturing_date: productForm.manufacturing_date,
@@ -98,9 +98,15 @@ export default function AddManufacturingOrderModal({ products, onClose }) {
         router.post('/manufacturing', {
             products: addedProducts,
         }, {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 setLoading(false);
-                onClose();
+                // Get the created orders from the response
+                const newOrders = page.props.flash?.newOrders || [];
+                if (onSuccess && newOrders.length > 0) {
+                    onSuccess(newOrders);
+                } else {
+                    onClose();
+                }
             },
             onError: (errors) => {
                 setLoading(false);
@@ -124,7 +130,7 @@ export default function AddManufacturingOrderModal({ products, onClose }) {
                 <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">Create Manufacturing Order</h2>
-                        <p className="mt-1 text-sm text-gray-500">Batch numbers are auto-generated from each product&#39;s SKU</p>
+                        <p className="mt-1 text-sm text-gray-500">Batch numbers are auto-generated from product category + sequential 3-digit number (001, 002, 003...)</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -266,13 +272,13 @@ export default function AddManufacturingOrderModal({ products, onClose }) {
                                     <span className="font-medium">Stock After Production:</span>{' '}
                                     {parseInt(selectedProduct.current_stock) + parseInt(productForm.production_quantity || 0)}
                                 </div>
-                                {computeBatchPreview(selectedProduct.sku, productForm.manufacturing_date) && (
+                                {computeBatchPreview(selectedProduct.category, productForm.manufacturing_date) && (
                                     <div className="text-sm">
                                         <span className="font-medium">Batch # Preview:</span>{' '}
                                         <span className="font-mono text-blue-700">
-                                            {computeBatchPreview(selectedProduct.sku, productForm.manufacturing_date)}
+                                            {computeBatchPreview(selectedProduct.category, productForm.manufacturing_date)}
                                         </span>
-                                        <span className="text-gray-400 text-xs ml-1">(serial assigned automatically)</span>
+                                        <span className="text-gray-400 text-xs ml-1">(sequential number assigned automatically)</span>
                                     </div>
                                 )}
                             </div>
@@ -324,7 +330,7 @@ export default function AddManufacturingOrderModal({ products, onClose }) {
                                             </div>
                                             <div className="text-sm text-blue-700 mt-1 font-mono">
                                                 <span className="font-sans font-medium text-gray-600">Batch #:</span>{' '}
-                                                {computeBatchPreview(product.product_sku, product.manufacturing_date)}
+                                                {computeBatchPreview(product.product_category, product.manufacturing_date)}
                                                 <span className="font-sans text-gray-400 text-xs ml-1">(auto)</span>
                                             </div>
                                         </div>

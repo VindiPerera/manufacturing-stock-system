@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 
-export default function AddProductModal({ onClose, onSuccess }) {
+export default function AddProductModal({ onClose, onSuccess, categories = [] }) {
     // Function to generate a 12-digit barcode
     const generateBarcode = () => {
         const min = 100000000000; // 12 digits starting from 100000000000
@@ -25,7 +25,6 @@ export default function AddProductModal({ onClose, onSuccess }) {
     const [validationErrors, setValidationErrors] = useState({});
 
     const units = ['pcs', 'box', 'kg', 'ltr', 'meter', 'dozen', 'set', 'piece'];
-    const categories = ['Electronics', 'Clothing', 'Food', 'Beverages', 'Furniture', 'Other'];
 
     // Handler to regenerate barcode
     const handleRegenerateBarcode = () => {
@@ -216,7 +215,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
                             >
                                 <option value="">Select Category</option>
                                 {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                    <option key={cat.id} value={cat.category_name}>{cat.category_name}</option>
                                 ))}
                             </select>
                             {validationErrors.category && (

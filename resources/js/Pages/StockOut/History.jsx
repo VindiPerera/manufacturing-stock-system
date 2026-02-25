@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { FiSearch, FiCalendar, FiArrowLeft, FiPackage, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiCalendar, FiArrowLeft, FiPackage, FiTrash2, FiDownload } from 'react-icons/fi';
 
 export default function History({ transactions = {}, stats = {}, filters: initialFilters = {} }) {
     const [filters, setFilters] = useState({
@@ -39,6 +39,15 @@ export default function History({ transactions = {}, stats = {}, filters: initia
         }
     };
 
+    const handleExportPdf = () => {
+        const params = new URLSearchParams();
+        if (filters.dateFrom) params.append('date_from', filters.dateFrom);
+        if (filters.dateTo) params.append('date_to', filters.dateTo);
+        if (filters.batchNumber) params.append('batch_number', filters.batchNumber);
+        
+        window.open(`/stock-out/export-pdf?${params.toString()}`, '_blank');
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Stock Out History" />
@@ -57,10 +66,11 @@ export default function History({ transactions = {}, stats = {}, filters: initia
                             <h1 className="text-3xl font-bold text-gray-900">STOCK OUT HISTORY</h1>
                         </div>
                         <button
-                            onClick={handleClearHistory}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+                            onClick={handleExportPdf}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
-                            <FiTrash2 /> Clear History
+                            <FiDownload />
+                            Export PDF
                         </button>
                     </div>
 

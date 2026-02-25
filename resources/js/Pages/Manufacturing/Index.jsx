@@ -12,14 +12,16 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
         date: '',
     });
 
-    // Check for new order from flash data and add it dynamically
+    // Check for new orders from flash data and add them dynamically
     useEffect(() => {
-        if (flash.newOrder) {
+        if (flash.newOrders && flash.newOrders.length > 0) {
             setOrders(prev => {
-                // Avoid duplicates by checking if order already exists
-                const exists = prev.some(o => o.id === flash.newOrder.id);
-                if (!exists) {
-                    return [flash.newOrder, ...prev];
+                // Avoid duplicates by checking if orders already exist
+                const newUniqueOrders = flash.newOrders.filter(
+                    newOrder => !prev.some(o => o.id === newOrder.id)
+                );
+                if (newUniqueOrders.length > 0) {
+                    return [...newUniqueOrders, ...prev];
                 }
                 return prev;
             });
@@ -50,6 +52,12 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
     const handleResetFilters = () => {
         setSearchQuery('');
         setFilters({ product: '', date: '' });
+    };
+
+    const handleOrderCreated = (newOrders) => {
+        // Add new orders to the beginning of the orders list
+        setOrders(prev => [...newOrders, ...prev]);
+        setShowAddModal(false);
     };
 
     const handleDeleteOrder = (orderId) => {
@@ -219,6 +227,7 @@ export default function ManufacturingIndex({ manufacturingOrders: initialOrders 
                 <AddManufacturingOrderModal 
                     products={products}
                     onClose={() => setShowAddModal(false)}
+                    onSuccess={handleOrderCreated}
                 />
             )}
         </AuthenticatedLayout>

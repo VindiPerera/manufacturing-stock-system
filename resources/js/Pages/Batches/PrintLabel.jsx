@@ -164,27 +164,19 @@ export default function PrintLabel({ batch }) {
                 >
                     {/* Label Content */}
                     <div className="h-full flex flex-col justify-between">
-                        {/* Top Section - Product Name */}
-                        <div className="text-center border-b border-gray-200 pb-1">
-                            <h2 className="text-lg font-bold text-gray-900 truncate">
-                                {batch.product.name}
-                            </h2>
-                            <p className="text-xs text-gray-500">{batch.product.sku}</p>
-                        </div>
-
                         {/* Middle Section - Barcode */}
-                        <div className="flex-1 flex items-center justify-center py-1 barcode-container">
+                        <div className="flex-1 flex items-center justify-center py-2 barcode-container">
                             <Barcode
                                 value={batch.batch_number}
-                                width={1.5}
-                                height={40}
-                                fontSize={10}
+                                width={1.8}
+                                height={50}
+                                fontSize={12}
                                 margin={0}
                                 displayValue={true}
                                 font="monospace"
                                 textAlign="center"
                                 textPosition="bottom"
-                                textMargin={2}
+                                textMargin={3}
                                 renderer="svg"
                                 background="#ffffff"
                                 lineColor="#000000"
@@ -192,17 +184,11 @@ export default function PrintLabel({ batch }) {
                         </div>
 
                         {/* Bottom Section - Dates */}
-                        <div className="flex justify-between items-center border-t border-gray-200 pt-1">
+                        <div className="flex justify-between items-center border-t border-gray-200 pt-2">
                             <div className="text-left">
                                 <p className="text-[10px] text-gray-500 uppercase font-medium">Mfg Date</p>
                                 <p className="text-xs font-semibold text-gray-800">
                                     {formatDate(batch.manufacturing_date)}
-                                </p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-[10px] text-gray-500 uppercase font-medium">Qty</p>
-                                <p className="text-xs font-semibold text-gray-800">
-                                    {batch.quantity}
                                 </p>
                             </div>
                             <div className="text-right">

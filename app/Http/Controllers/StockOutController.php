@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class StockOutController extends Controller
 {
@@ -225,6 +226,67 @@ class StockOutController extends Controller
             'stats' => $stats,
             'filters' => $request->only(['date_from', 'date_to', 'batch_number']),
         ]);
+    }
+
+    /**
+     * Export stock out history to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = StockOutTransaction::with(['batch.product', 'user'])
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->has('batch_number') && $request->batch_number) {
+            $query->whereHas('batch', function ($q) use ($request) {
+                $q->where('batch_number', 'like', '%' . $request->batch_number . '%');
+            });
+        }
+
+        $transactions = $query->get()->map(function ($transaction) {
+            // Get store remaining quantity for this batch from most recent transfer
+            $storeRemaining = StockTransferItem::where('batch_id', $transaction->batch_id)
+                ->sum('store_remaining_quantity');
+
+            return (object) [
+                'id' => $transaction->id,
+                'batch_number' => $transaction->batch->batch_number,
+                'product_name' => $transaction->batch->product->name,
+                'product_sku' => $transaction->batch->product->sku,
+                'quantity' => $transaction->quantity,
+                'remaining_quantity' => $transaction->remaining_quantity,
+                'store_remaining_quantity' => $storeRemaining,
+                'reason' => $transaction->reason,
+                'user_name' => $transaction->user ? $transaction->user->name : 'System',
+                'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+
+        // Get summary stats
+        $stats = [
+            'total_transactions' => StockOutTransaction::count(),
+            'today_transactions' => StockOutTransaction::today()->count(),
+            'today_quantity' => StockOutTransaction::today()->sum('quantity'),
+        ];
+
+        $pdf = Pdf::loadView('pdf.stock-out-history', [
+            'transactions' => $transactions,
+            'stats' => $stats,
+            'dateFrom' => $request->date_from,
+            'dateTo' => $request->date_to,
+            'batchNumber' => $request->batch_number,
+        ]);
+
+        $filename = 'stock-out-history-' . now()->format('Y-m-d-His') . '.pdf';
+        return $pdf->download($filename);
     }
 
     /**

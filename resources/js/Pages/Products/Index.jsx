@@ -3,11 +3,14 @@ import { Head, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
 import AddProductModal from '@/Components/AddProductModal';
 import EditProductModal from '@/Components/EditProductModal';
+import AddCategoryModal from '@/Components/AddCategoryModal';
 
-export default function ProductIndex({ products: initialProducts = [], flash = {} }) {
+export default function ProductIndex({ products: initialProducts = [], categories: initialCategories = [], flash = {} }) {
     const [products, setProducts] = useState(initialProducts);
+    const [categories, setCategories] = useState(initialCategories);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({
@@ -29,11 +32,6 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
             });
         }
     }, [flash]);
-
-    // Get unique categories
-    const categories = useMemo(() => {
-        return [...new Set(products.map(p => p.category))].filter(Boolean);
-    }, [products]);
 
     // Filter products based on search and filters
     const filteredProducts = useMemo(() => {
@@ -100,6 +98,12 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
         setSelectedProduct(null);
     };
 
+    const handleCategoryAdded = () => {
+        // Reload the page to get fresh categories from server
+        router.reload({ only: ['categories'] });
+        setShowAddCategoryModal(false);
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Products" />
@@ -138,13 +142,23 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
                             />
                         </div>
 
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 transition"
-                        >
-                            <span>+</span>
-                            <span>ADD MORE PRODUCT</span>
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setShowAddCategoryModal(true)}
+                                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 transition"
+                            >
+                                <span>+</span>
+                                <span>ADD CATEGORY</span>
+                            </button>
+                            
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 transition"
+                            >
+                                <span>+</span>
+                                <span>ADD MORE PRODUCT</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Filters */}
@@ -156,7 +170,7 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
                         >
                             <option value="">Filter by Category</option>
                             {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
+                                <option key={cat.id} value={cat.category_name}>{cat.category_name}</option>
                             ))}
                         </select>
 
@@ -300,6 +314,7 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
                 <AddProductModal 
                     onClose={() => setShowAddModal(false)}
                     onSuccess={handleAddProduct}
+                    categories={initialCategories}
                 />
             )}
 
@@ -313,6 +328,15 @@ export default function ProductIndex({ products: initialProducts = [], flash = {
                         setShowEditModal(false);
                         setSelectedProduct(null);
                     }}
+                    categories={initialCategories}
+                />
+            )}
+
+            {/* Add Category Modal */}
+            {showAddCategoryModal && (
+                <AddCategoryModal 
+                    onClose={() => setShowAddCategoryModal(false)}
+                    onSuccess={handleCategoryAdded}
                 />
             )}
         </AuthenticatedLayout>

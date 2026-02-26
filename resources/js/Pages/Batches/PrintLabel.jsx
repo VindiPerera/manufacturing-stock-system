@@ -69,9 +69,9 @@ export default function PrintLabel({ batch }) {
                         
                         /* Label sizing for standard sticky labels */
                         .label-container {
-                            width: 4in !important;
-                            height: 2in !important;
-                            padding: 0.15in !important;
+                            width: 30mm !important;
+                            height: 15mm !important;
+                            padding: 1mm !important;
                             margin: 0 !important;
                             box-shadow: none !important;
                             border: 1px solid #ccc !important;
@@ -100,7 +100,7 @@ export default function PrintLabel({ batch }) {
                         }
                         
                         @page {
-                            size: 4in 2in;
+                            size: 30mm 15mm;
                             margin: 0;
                         }
                     }
@@ -133,21 +133,7 @@ export default function PrintLabel({ batch }) {
                         </button>
                     </div>
 
-                    {/* Label Size Info */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                        <h3 className="font-semibold text-yellow-800 mb-2">Label Printing Tips:</h3>
-                        <ul className="text-sm text-yellow-700 space-y-1">
-                            <li>• Recommended label size: 4" × 2" (100mm × 50mm)</li>
-                            <li>• Set printer to "Actual Size" or "100%" scale</li>
-                            <li>• Use thermal label printer for best results</li>
-                            <li>• Ensure barcode scanner can read the printed label</li>
-                        </ul>
-                    </div>
 
-                    {/* Label Preview */}
-                    <div className="text-center mb-4">
-                        <p className="text-gray-600 text-sm">Label Preview (Actual Print Size: 4" × 2")</p>
-                    </div>
                 </div>
             </div>
 
@@ -157,19 +143,18 @@ export default function PrintLabel({ batch }) {
                     ref={labelRef}
                     className="label-container bg-white border-2 border-dashed border-gray-300 rounded-lg shadow-lg"
                     style={{
-                        width: '4in',
-                        height: '2in',
-                        padding: '0.15in',
+                        width: '30mm',
+                        height: '15mm',
+                        padding: '1mm',
                     }}
                 >
-                    {/* Label Content */}
-                    <div className="h-full flex flex-col justify-between">
-                        {/* Middle Section - Barcode */}
-                        <div className="flex-1 flex items-center justify-center py-2 barcode-container">
+                    {/* Label Content - Vertical Barcode Only */}
+                    <div className="h-full flex items-center justify-center">
+                        <div style={{ transform: 'rotate(90deg)', transformOrigin: 'center' }}>
                             <Barcode
                                 value={batch.batch_number}
-                                width={2}
-                                height={57}
+                                width={0.8}
+                                height={25}
                                 margin={0}
                                 displayValue={false}
                                 renderer="svg"

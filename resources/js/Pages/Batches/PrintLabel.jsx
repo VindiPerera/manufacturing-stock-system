@@ -168,15 +168,10 @@ export default function PrintLabel({ batch }) {
                         <div className="flex-1 flex items-center justify-center py-2 barcode-container">
                             <Barcode
                                 value={batch.batch_number}
-                                width={1.8}
-                                height={50}
-                                fontSize={12}
+                                width={2}
+                                height={57}
                                 margin={0}
-                                displayValue={true}
-                                font="monospace"
-                                textAlign="center"
-                                textPosition="bottom"
-                                textMargin={3}
+                                displayValue={false}
                                 renderer="svg"
                                 background="#ffffff"
                                 lineColor="#000000"

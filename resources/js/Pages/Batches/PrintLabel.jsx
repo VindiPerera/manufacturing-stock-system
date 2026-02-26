@@ -74,7 +74,7 @@ export default function PrintLabel({ batch }) {
                             padding: 1mm !important;
                             margin: 0 !important;
                             box-shadow: none !important;
-                            border: 1px solid #ccc !important;
+                            border: 1px solid #000 !important;
                             border-radius: 0 !important;
                             background: white !important;
                         }
@@ -141,20 +141,21 @@ export default function PrintLabel({ batch }) {
             <div className="print-area flex justify-center no-print:mt-0 mt-[-200px]">
                 <div 
                     ref={labelRef}
-                    className="label-container bg-white border-2 border-dashed border-gray-300 rounded-lg shadow-lg"
+                    className="label-container bg-white border border-black"
                     style={{
                         width: '30mm',
                         height: '15mm',
                         padding: '1mm',
                     }}
                 >
-                    {/* Label Content - Vertical Barcode Only */}
-                    <div className="h-full flex items-center justify-center">
-                        <div style={{ transform: 'rotate(90deg)', transformOrigin: 'center' }}>
+                    {/* Label Content - Horizontal Barcode with Dates */}
+                    <div className="h-full flex flex-col justify-between">
+                        {/* Top Section - Barcode */}
+                        <div className="flex items-center justify-center flex-1">
                             <Barcode
                                 value={batch.batch_number}
                                 width={0.8}
-                                height={25}
+                                height={18}
                                 margin={0}
                                 displayValue={false}
                                 renderer="svg"
@@ -164,16 +165,16 @@ export default function PrintLabel({ batch }) {
                         </div>
 
                         {/* Bottom Section - Dates */}
-                        <div className="flex justify-between items-center border-t border-gray-200 pt-2">
+                        <div className="flex justify-between items-end border-t border-gray-300" style={{ paddingTop: '1px' }}>
                             <div className="text-left">
-                                <p className="text-[10px] text-gray-500 uppercase font-medium">Mfg Date</p>
-                                <p className="text-xs font-semibold text-gray-800">
+                                <p className="text-[6px] text-gray-600 uppercase font-semibold leading-tight">MFG DATE</p>
+                                <p className="text-[7px] font-bold text-gray-900 leading-tight">
                                     {formatDate(batch.manufacturing_date)}
                                 </p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] text-gray-500 uppercase font-medium">Expiry Date</p>
-                                <p className={`text-xs font-semibold ${batch.expiry_date ? 'text-red-600' : 'text-gray-400'}`}>
+                                <p className="text-[6px] text-gray-600 uppercase font-semibold leading-tight">EXPIRY DATE</p>
+                                <p className="text-[7px] font-bold text-gray-900 leading-tight">
                                     {formatDate(batch.expiry_date)}
                                 </p>
                             </div>

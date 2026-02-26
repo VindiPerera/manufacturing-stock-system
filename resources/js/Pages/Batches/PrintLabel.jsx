@@ -154,7 +154,7 @@ export default function PrintLabel({ batch }) {
                         <div className="flex items-center justify-center flex-1">
                             <Barcode
                                 value={batch.batch_number}
-                                width={0.8}
+                                width={1}
                                 height={18}
                                 margin={0}
                                 displayValue={false}

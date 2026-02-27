@@ -64,55 +64,39 @@ export default function EditProductModal({ product, onClose, onSuccess, categori
 
         setLoading(true);
 
-        const form = new FormData();
-        form.append('name', formData.name);
-        form.append('sku', formData.sku);
-        form.append('category', formData.category);
-        form.append('unit', formData.unit);
-        form.append('barcode', formData.barcode);
-        form.append('description', formData.description);
-        form.append('minimum_stock', formData.minimum_stock || '0');
-        form.append('price', formData.price || '0');
-        form.append('_method', 'PUT');
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('sku', formData.sku);
+        data.append('category', formData.category);
+        data.append('unit', formData.unit);
+        data.append('barcode', formData.barcode);
+        data.append('description', formData.description);
+        data.append('minimum_stock', formData.minimum_stock || '0');
+        data.append('price', formData.price || '0');
 
         const imageInput = document.querySelector('#edit-image-input');
         if (imageInput && imageInput.files[0]) {
-            form.append('image', imageInput.files[0]);
+            data.append('image', imageInput.files[0]);
         }
 
-        try {
-            const response = await fetch(`/products/${product.id}`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                },
-                body: form
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
+        router.post(`/products/${product.id}`, {
+            _method: 'PUT',
+            ...Object.fromEntries(data.entries())
+        }, {
+            forceFormData: true,
+            onSuccess: (response) => {
                 setLoading(false);
-                // Call onSuccess with the updated product data
-                if (onSuccess && data.product) {
-                    onSuccess(data.product);
+                if (onSuccess) {
+                    onSuccess(response.props?.product || formData);
                 }
                 onClose();
-            } else {
+            },
+            onError: (errors) => {
                 setLoading(false);
-                // Handle validation errors
-                if (data.errors) {
-                    const errorMessages = Object.values(data.errors).flat().join('\n');
-                    alert('Error updating product:\n' + errorMessages);
-                } else {
-                    alert(data.message || 'Error updating product. Please try again.');
-                }
+                console.error('Update failed:', errors);
+                alert('Failed to update product. Please check the form and try again.');
             }
-        } catch (error) {
-            setLoading(false);
-            console.error('Error updating product:', error);
-            alert('Error updating product. Please try again.');
-        }
+        });
     };
 
     if (!product) {

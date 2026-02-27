@@ -82,7 +82,7 @@ export default function ProductIndex({ products: initialProducts = [], categorie
         if (confirm('Are you sure you want to delete this product?')) {
             router.delete(`/products/${productId}`, {
                 onSuccess: () => {
-                    setProducts(products.filter(p => p.id !== productId));
+                    setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
                 }
             });
         }
@@ -135,7 +135,7 @@ export default function ProductIndex({ products: initialProducts = [], categorie
                         <div className="flex-1 max-w-md">
                             <input
                                 type="text"
-                                placeholder="Search by name, code or scan barcode."
+                                placeholder="Search by name"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -174,11 +174,11 @@ export default function ProductIndex({ products: initialProducts = [], categorie
                             ))}
                         </select>
 
-                        <select className="px-4 py-2 border border-gray-300 rounded-lg text-blue-600 font-semibold hover:bg-gray-50 focus:outline-none">
+                        {/* <select className="px-4 py-2 border border-gray-300 rounded-lg text-blue-600 font-semibold hover:bg-gray-50 focus:outline-none">
                             <option>Filter by Location</option>
-                        </select>
+                        </select> */}
 
-                        <select
+                        {/* <select
                             value={filters.stock}
                             onChange={(e) => handleFilterChange('stock', e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg text-blue-600 font-semibold hover:bg-gray-50 focus:outline-none"
@@ -187,9 +187,9 @@ export default function ProductIndex({ products: initialProducts = [], categorie
                             <option value="available">Available</option>
                             <option value="low">Low Stock</option>
                             <option value="out">Out of Stock</option>
-                        </select>
+                        </select> */}
 
-                        <select
+                        {/* <select
                             value={filters.price}
                             onChange={(e) => handleFilterChange('price', e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg text-blue-600 font-semibold hover:bg-gray-50 focus:outline-none"
@@ -198,7 +198,7 @@ export default function ProductIndex({ products: initialProducts = [], categorie
                             <option value="under100">Under $100</option>
                             <option value="100to500">$100 - $500</option>
                             <option value="above500">Above $500</option>
-                        </select>
+                        </select> */}
 
                         
 
@@ -256,20 +256,7 @@ export default function ProductIndex({ products: initialProducts = [], categorie
                                             </div>
                                         </div>
 
-                                        {/* Product Details */}
-                                        <div className="text-xs text-gray-400 space-y-1">
-                                            <p>Color: N/A Size: N/A</p>
-                                            <p>Supplier: N/A</p>
-                                        </div>
-
-                                        {/* Stock Status */}
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center text-green-400 text-xs font-medium">
-                                                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                                                In Stock ({product.stock || 0})
-                                            </div>
-                                        </div>
-
+                                      
                                         {/* Action Buttons */}
                                         <div className="flex justify-center gap-2 pt-2">
                                             <button

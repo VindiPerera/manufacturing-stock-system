@@ -74,7 +74,7 @@ export default function PrintLabel({ batch }) {
                             padding: 1mm !important;
                             margin: 0 !important;
                             box-shadow: none !important;
-                            border: 1px solid #000 !important;
+                            border: none !important;
                             border-radius: 0 !important;
                             background: white !important;
                         }
@@ -141,7 +141,7 @@ export default function PrintLabel({ batch }) {
             <div className="print-area flex justify-center no-print:mt-0 mt-[-500px]">
                 <div 
                     ref={labelRef}
-                    className="label-container bg-white border border-black"
+                    className="label-container bg-white"
                     style={{
                         width: '30mm',
                         height: '15mm',
@@ -167,25 +167,25 @@ export default function PrintLabel({ batch }) {
 
                         {/* Bottom Section - Dates */}
                         {/* Bottom Section - Batch Number in Middle, Dates with Month/Year (short year) */}
-<div className="flex justify-between items-end border-t border-gray-300" style={{ paddingTop: '1px' }}>
+<div className="flex justify-between items-end" style={{ paddingTop: '1px' }}>
     <div className="text-left">
-        <p className="text-[6px] text-black font-bold uppercase leading-tight">MFG</p>
-        <p className="text-[7px] font-bold text-black leading-tight">
+        <p className="text-[4px] text-black font-bold uppercase leading-tight">MFG</p>
+        <p className="text-[5px] font-bold text-black leading-tight">
             {batch.manufacturing_date ? new Date(batch.manufacturing_date).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A'}
         </p>
     </div>
     
     {/* Batch Number in the Middle */}
     <div className="text-center">
-        <p className="text-[5px] text-black font-bold uppercase leading-tight">BATCH</p>
-        <p className="text-[7px] font-bold text-black leading-tight font-mono">
+        <p className="text-[4px] text-black font-bold uppercase leading-tight">BATCH</p>
+        <p className="text-[5px] font-bold text-black leading-tight font-mono">
             {batch.batch_number}
         </p>
     </div>
     
     <div className="text-right">
-        <p className="text-[6px] text-black font-bold uppercase leading-tight">EXP</p>
-        <p className="text-[7px] font-bold text-black leading-tight">
+        <p className="text-[4px] text-black font-bold uppercase leading-tight">EXP</p>
+        <p className="text-[5px] font-bold text-black leading-tight">
             {batch.expiry_date ? new Date(batch.expiry_date).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A'}
         </p>
     </div>

@@ -143,8 +143,8 @@ export default function PrintLabel({ batch }) {
                     ref={labelRef}
                     className="label-container bg-white border border-black"
                     style={{
-                        width: '60mm',
-                        height: '30mm',
+                        width: '30mm',
+                        height: '15mm',
                         padding: '1mm',
                     }}
                 >
@@ -155,8 +155,8 @@ export default function PrintLabel({ batch }) {
                             <Barcode
                                 value={batch.batch_number}
                                 format="CODE93"
-                                width={2}
-                                height={25}
+                                width={0.8}
+                                height={18}
                                 margin={0}
                                 displayValue={false}
                                 renderer="svg"

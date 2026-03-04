@@ -72,6 +72,11 @@ export default function Dashboard() {
         
     ];
 
+    // Filter out LABELING card for staff role
+    const filteredFeatures = auth.user.role === 'staff' 
+        ? features.filter(feature => feature.id !== 3)
+        : features;
+
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
@@ -79,7 +84,7 @@ export default function Dashboard() {
             <div className="bg-gray-50 py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {features.map((feature) => (
+                        {filteredFeatures.map((feature) => (
                             <Link
                                 key={feature.id}
                                 href={feature.link}

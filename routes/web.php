@@ -109,7 +109,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/analytics/sales-details', [AnalyticsController::class, 'getSalesDetails'])->name('analytics.api.sales');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+// Routes accessible by both admin and staff
+Route::middleware(['auth', 'role:admin,staff'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -130,16 +131,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/manufacturing/next-batch-number', [ManufacturingOrderController::class, 'getNextBatchNumber'])->name('manufacturing.nextBatchNumber');
     Route::resource('manufacturing', ManufacturingOrderController::class);
 
-    // Batch & Labeling Routes
-    Route::resource('batches', BatchController::class)->except(['create', 'edit', 'update']);
-    Route::get('/batches/{batch}/print', [BatchController::class, 'printLabel'])->name('batches.print');
-    Route::post('/batches/{batch}/mark-printed', [BatchController::class, 'markPrinted'])->name('batches.markPrinted');
-    Route::post('/batches/print-multiple', [BatchController::class, 'printMultiple'])->name('batches.printMultiple');
-    Route::post('/batches/mark-multiple-printed', [BatchController::class, 'markMultiplePrinted'])->name('batches.markMultiplePrinted');
-    Route::post('/batches/preview', [BatchController::class, 'preview'])->name('batches.preview');
-    Route::get('/batches/search', [BatchController::class, 'search'])->name('batches.search');
-    Route::get('/products/{product}/batches', [BatchController::class, 'productHistory'])->name('batches.productHistory');
-
     // Stock Out / Checkout Routes (Scan-to-Deduct)
     Route::get('/stock-out', [StockOutController::class, 'index'])->name('stock-out.index');
     Route::post('/stock-out/scan', [StockOutController::class, 'scan'])->name('stock-out.scan');
@@ -154,6 +145,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/stock-transfers/history', [StockTransferController::class, 'history'])->name('stock-transfers.history');
     Route::get('/stock-transfers/stores', [StockTransferController::class, 'stores'])->name('stock-transfers.stores');
     Route::post('/stock-transfers/stores', [StockTransferController::class, 'storeStore'])->name('stock-transfers.stores.store');
+});
+
+// Routes accessible by admin only (Batch & Labeling)
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Batch & Labeling Routes
+    Route::resource('batches', BatchController::class)->except(['create', 'edit', 'update']);
+    Route::get('/batches/{batch}/print', [BatchController::class, 'printLabel'])->name('batches.print');
+    Route::post('/batches/{batch}/mark-printed', [BatchController::class, 'markPrinted'])->name('batches.markPrinted');
+    Route::post('/batches/print-multiple', [BatchController::class, 'printMultiple'])->name('batches.printMultiple');
+    Route::post('/batches/mark-multiple-printed', [BatchController::class, 'markMultiplePrinted'])->name('batches.markMultiplePrinted');
+    Route::post('/batches/preview', [BatchController::class, 'preview'])->name('batches.preview');
+    Route::get('/batches/search', [BatchController::class, 'search'])->name('batches.search');
+    Route::get('/products/{product}/batches', [BatchController::class, 'productHistory'])->name('batches.productHistory');
 });
 
 require __DIR__.'/auth.php';

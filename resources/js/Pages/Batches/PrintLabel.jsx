@@ -67,33 +67,37 @@ export default function PrintLabel({ batch }) {
                             margin: 0;
                         }
                         
-                        /* Label sizing for standard sticky labels */
+                        /* Label sizing for 30mm x 15mm sticky labels */
                         .label-container {
                             width: 30mm !important;
                             height: 15mm !important;
-                            padding: 1mm !important;
+                            padding: 0.5mm 0.8mm !important;
                             margin: 0 !important;
                             box-shadow: none !important;
                             border: none !important;
                             border-radius: 0 !important;
                             background: white !important;
+                            overflow: hidden !important;
                         }
                         
                         /* CRITICAL: Ensure barcode SVG is visible and prints correctly */
                         .label-container svg {
                             display: block !important;
                             visibility: visible !important;
-                            width: auto !important;
+                            max-width: 100% !important;
                             height: auto !important;
+                            image-rendering: pixelated !important;
+                            shape-rendering: crispEdges !important;
                         }
 
                         .barcode-wrapper {
-                            padding: 0 1.2mm;
+                            padding: 0 0.5mm;
                         }
                         
                         .label-container svg rect,
                         .label-container svg text {
                             visibility: visible !important;
+                            shape-rendering: crispEdges !important;
                         }
                         
                         /* Ensure text colors print */
@@ -101,6 +105,17 @@ export default function PrintLabel({ batch }) {
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                             color-adjust: exact !important;
+                        }
+
+                        .label-text {
+                            font-size: 5.5pt !important;
+                            font-weight: 900 !important;
+                            letter-spacing: 0.2px !important;
+                        }
+
+                        .label-heading {
+                            font-size: 4.5pt !important;
+                            font-weight: 800 !important;
                         }
                         
                         @page {
@@ -149,20 +164,20 @@ export default function PrintLabel({ batch }) {
                     style={{
                         width: '30mm',
                         height: '15mm',
-                        padding: '1mm',
+                        padding: '0.5mm 0.8mm',
                     }}
                 >
-                    {/* Label Content - Horizontal Barcode with Dates */}
-                    <div className="h-full flex flex-col justify-between">
+                    {/* Label Content - Optimized for 30mm x 15mm */}
+                    <div className="h-full flex flex-col justify-between" style={{ gap: '0.5mm' }}>
                         {/* Top Section - Barcode */}
-                        <div className="barcode-wrapper flex items-center justify-center flex-1">
+                        <div className="barcode-wrapper flex items-center justify-center" style={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
                             <Barcode
                                 value={batch.batch_number}
                                 format="CODE128"
-                                width={1.1}
-                                height={30}
+                                width={0.75}
+                                height={22}
                                 margin={0}
-                                marginTop={0}
+                                marginTop={1}
                                 marginBottom={0}
                                 displayValue={false}
                                 renderer="svg"
@@ -171,31 +186,29 @@ export default function PrintLabel({ batch }) {
                             />
                         </div>
 
-                        {/* Bottom Section - Dates */}
-                        {/* Bottom Section - Batch Number in Middle, Dates with Month/Year (short year) */}
-<div className="flex justify-between items-end" style={{ paddingTop: '1.5px' }}>
-    <div className="text-left flex flex-col gap-[1px]">
-        <p className="text-[6px] text-black font-bold uppercase leading-[1.2]">MFG</p>
-        <p className="text-[6px] font-bold text-black leading-[1.2]">
-            {batch.manufacturing_date ? new Date(batch.manufacturing_date).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A'}
-        </p>
-    </div>
-    
-    {/* Batch Number in the Middle */}
-    <div className="text-center flex flex-col gap-[1px]">
-        <p className="text-[6px] text-black font-bold uppercase leading-[1.2]">BATCH</p>
-        <p className="text-[6px] font-bold text-black leading-[1.2] font-mono">
-            {batch.batch_number}
-        </p>
-    </div>
-    
-    <div className="text-right flex flex-col gap-[1px]">
-        <p className="text-[6px] text-black font-bold uppercase leading-[1.2]">EXP</p>
-        <p className="text-[6px] font-bold text-black leading-[1.2]">
-            {batch.expiry_date ? new Date(batch.expiry_date).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A'}
-        </p>
-    </div>
-</div>
+                        {/* Bottom Section - Batch Number in Middle, Dates */}
+                        <div className="flex justify-between items-end" style={{ padding: '0 0.3mm', lineHeight: 1 }}>
+                            <div className="text-left" style={{ lineHeight: 1.1 }}>
+                                <p className="label-heading text-black font-extrabold uppercase" style={{ fontSize: '4.5pt', marginBottom: '0.3px' }}>MFG</p>
+                                <p className="label-text font-black text-black" style={{ fontSize: '5.5pt' }}>
+                                    {batch.manufacturing_date ? new Date(batch.manufacturing_date).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A'}
+                                </p>
+                            </div>
+                            
+                            <div className="text-center" style={{ lineHeight: 1.1 }}>
+                                <p className="label-heading text-black font-extrabold uppercase" style={{ fontSize: '4.5pt', marginBottom: '0.3px' }}>BATCH</p>
+                                <p className="label-text font-black text-black font-mono" style={{ fontSize: '5.5pt', letterSpacing: '0.2px' }}>
+                                    {batch.batch_number}
+                                </p>
+                            </div>
+                            
+                            <div className="text-right" style={{ lineHeight: 1.1 }}>
+                                <p className="label-heading text-black font-extrabold uppercase" style={{ fontSize: '4.5pt', marginBottom: '0.3px' }}>EXP</p>
+                                <p className="label-text font-black text-black" style={{ fontSize: '5.5pt' }}>
+                                    {batch.expiry_date ? new Date(batch.expiry_date).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

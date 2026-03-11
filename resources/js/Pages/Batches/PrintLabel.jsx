@@ -155,8 +155,8 @@ export default function PrintLabel({ batch }) {
                             <Barcode
                                 value={batch.batch_number}
                                 format="CODE93"
-                                width={0.8}
-                                height={18}
+                                width={1.0}
+                                height={22}
                                 margin={0}
                                 displayValue={false}
                                 renderer="svg"

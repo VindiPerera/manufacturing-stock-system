@@ -160,7 +160,7 @@ export default function PrintLabel({ batch }) {
                                 value={batch.batch_number}
                                 format="CODE128"
                                 width={1.1}
-                                height={20}
+                                height={30}
                                 margin={0}
                                 marginTop={0}
                                 marginBottom={0}
